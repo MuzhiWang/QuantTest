@@ -1,7 +1,9 @@
 import pymongo
 from Config.StockConfig import StockDataType
+import Common.StringUtils as str_utils
 import json
 import string
+import bson
 
 class Client(object):
 
@@ -25,6 +27,12 @@ class Client(object):
         dblist = self.client.list_database_names()
         print("db list: " + ', '.join(dblist))
 
+    def get_record(self, stock_data_type: StockDataType, collection_id, date):
+        if stock_data_type == StockDataType.Daily:
+            records = self.stock_daily_db[collection_id].find({'_id': str_utils.date_to_object_id(date)})
+            for r in records:
+                return r
+
     def get_stock_price(self, stock_id, stock_data_type, start_date = None, end_date = None):
         if stock_data_type == StockDataType.Daily:
             if start_date == None:
@@ -33,20 +41,32 @@ class Client(object):
                 end_date = "20191010"
 
 
-    def insert_stock_price(self, stock_id, stock_date_type, df_data):
+    def upsert_stock_price(self, stock_id: str, stock_date_type, df_data, date=None):
         if stock_date_type == StockDataType.Daily:
+            if date is None:
+                raise Exception("no date for daily stock price insert")
             # collect_lists = self.stock_daily_db.list_collection_names()
             cur_collection = self.stock_daily_db[stock_id]
-            dict = df_data.to_dict()
-            dict["_id"] = str(stock_id)
-            tt = json.dumps(dict, separators = (",", ":")).replace("\"", "'")
-            ttt = df_data.to_json()
-            print(tt)
-            print(ttt)
+            # dicts = df_data.to_dict()
+            dicts = {
+                "_id": str_utils.date_to_object_id(date),
+                "df": "test_dffdsafdsafdsa"
+            }
+            # dicts['_id'] = str_utils.date_to_object_id(date)
+            # tt = json.dumps(dict, separators = (",", ":")).replace("\"", "'")
+            # ttt = df_data.to_json()
+            # print(tt)
+            # print(ttt)
+
             print("correct: ")
-            print(json.loads(df_data.to_json()))
+            correct = json.loads(df_data.to_json())
+            print(correct)
             print("\n\n")
-            return cur_collection.insert_one(tt)
+
+            myquery = {"_id": str_utils.date_to_object_id(date)}
+            newvalues = {"$set": dicts}
+
+            cur_collection.update_one(myquery, newvalues, upsert=True)
         elif stock_date_type == StockDataType.FiveMins:
             pass
         elif stock_date_type == StockDataType.OneMin:

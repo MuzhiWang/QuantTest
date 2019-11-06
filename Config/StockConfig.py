@@ -9,4 +9,4 @@ class StockDataType(enum.Enum):
     OneMin = 5
 
 class StockCode:
-    Test = ['000001', '000002', '000003']
+    Test = ["000001", "000002", "000003"]

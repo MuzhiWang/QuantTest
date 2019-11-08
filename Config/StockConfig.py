@@ -1,5 +1,8 @@
 import enum
 
+class Constant:
+    MINUTES_IN_DAY = 240
+
 class StockDataType(enum.Enum):
     Daily = 0
     OneHour = 1
@@ -10,3 +13,4 @@ class StockDataType(enum.Enum):
 
 class StockCode:
     Test = ["000001", "000002", "000003"]
+

@@ -30,12 +30,56 @@ class Client(object):
         dblist = self.client.list_database_names()
         print("db list: " + ', '.join(dblist))
 
-    def get_record(self, stock_data_type: StockDataType, collection_id, date):
-        if stock_data_type == StockDataType.Daily:
-            records = self.stock_daily_db[collection_id].find({Constant.ID: str_utils.date_to_object_id(date)})
+    def get_record(self, stock_date_type: StockDataType, collection_id: str, record_id: bson.ObjectId):
+        if stock_date_type == StockDataType.Daily:
+            records = self.stock_daily_db[collection_id].find({Constant.ID: record_id})
             for r in records:
                 return r
             return None
+
+    def upsert_record(self, stock_date_type: StockDataType, collection_id: str, record: dict, record_id: bson.ObjectId = None):
+        if record_id is None:
+            record_id = bson.ObjectId()
+
+        if stock_date_type == StockDataType.Daily:
+            cur_collection = self.stock_daily_db[collection_id]
+            myquery = {Constant.ID: record_id}
+            newvalues = {"$set": record}
+
+            cur_collection.update_one(myquery, newvalues, upsert=True)
+        elif stock_date_type == StockDataType.FiveMins:
+            pass
+        elif stock_date_type == StockDataType.OneMin:
+            pass
+
+    def get_store_dates(self, stock_date_type: StockDataType, collection_id: str):
+        res = self.get_record(stock_date_type, collection_id, Constant.STORED_DATES_STATUS_ID)
+        if res is None:
+            return None
+        return res[Constant.STORED_DATES_MAP]
+
+    def save_dates(self, stock_date_type: StockDataType, collection_id: str, start_date, end_date = None):
+        dates_map = self.get_store_dates(stock_date_type, collection_id)
+        if dates_map is None:
+            dates_map = {}
+
+        all_days = []
+        if end_date is None:
+            all_days.append(start_date)
+        else:
+            all_days = DatetimeUtils.get_interval_dates(start_date, end_date)
+
+        for day in all_days:
+            if day not in dates_map or dates_map[day] is False:
+                dates_map[day] = True
+
+        dates_record = {
+            Constant.ID: Constant.STORED_DATES_STATUS_ID,
+            Constant.STORED_DATES_MAP: dates_map
+        }
+
+        self.upsert_record(stock_date_type, collection_id, dates_record, Constant.STORED_DATES_STATUS_ID)
+
 
     def get_stock_price_df(self, stock_id, stock_data_type, start_date = None, end_date = None):
         if stock_data_type == StockDataType.Daily:
@@ -48,7 +92,7 @@ class Client(object):
             all_df = pd.DataFrame()
 
             for date in all_dates:
-                get_rec = self.get_record(StockDataType.Daily, stock_id, date)
+                get_rec = self.get_record(StockDataType.Daily, stock_id, str_utils.date_to_object_id(date))
                 if get_rec is None:
                     continue
                 json_obj = json.loads(get_rec[Constant.DATAFRAME])

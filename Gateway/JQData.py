@@ -10,11 +10,10 @@ class JQData_GW(object):
     client = None
 
     def __init__(self):
-        pass
         jq.auth(self.__user_name, self.__pw)
 
     def get_1min_bars(self, stock_id: str, count: int, end_date: str):
-        df = jq.get_bars(jq.normal_security_code(stock_id), count, unit='1m',
+        return jq.get_bars(jq.normalize_code(stock_id), count, unit='1m',
                          fields=['date', 'open', 'close', 'high', 'low', 'volume', 'money'], include_now=False,
                          end_dt=end_date)
 
@@ -40,7 +39,7 @@ class JQData_GW(object):
 
 
 
-gw = JQData_GW()
+# gw = JQData_GW()
 # gw.test()
 
 print(jq.get_query_count())
@@ -54,9 +53,11 @@ print(jq.get_query_count())
 # print(gw.get_all_conecpts())
 # print(gw.get_industries(cfg.IndustryCode.zjw))
 
-print(gw.get_industry_stocks("L72"))
+# print(gw.get_industry_stocks("L72"))
 # print(gw.get_all_trade_days())
-print(gw.get_trade_days("2018-01-01"))
+# print(jq.get_trade_days("2019-10-01"))
 
 # print(cfg.IndustryCode.zjw.name)
+
+print(jq.normalize_code("000001"))
 

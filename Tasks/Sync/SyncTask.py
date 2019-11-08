@@ -1,8 +1,8 @@
-from Core.Provider.TuShare import TuShare
+from Gateway.TuShare import TuShare_GW
 from Config.StockConfig import *
 from Database.MongoDB import Client
 from Config.StockConfig import StockDataType
-import pandas
+
 
 class SyncTask(object):
 
@@ -10,7 +10,7 @@ class SyncTask(object):
         pass
 
     def sync(self):
-        ts = TuShare()
+        ts = TuShare_GW()
         mongodb_client = Client.Client()
         start_date = '20181001'
         end_date = '20181011'

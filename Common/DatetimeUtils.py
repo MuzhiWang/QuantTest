@@ -24,3 +24,14 @@ def convert_date_str_to_int(date_str: str):
     if not is_date(date_str):
         raise Exception("not date str for converting")
     return int(date_str.replace("-", ""))
+
+
+def get_today_date():
+    return date.today()
+
+def get_n_days_before_date(n: int):
+    dt = datetime.datetime.now() - timedelta(days=n)
+    return dt.date()
+
+def date_to_str(d: date):
+    return d.strftime(DATE_FORMAT)

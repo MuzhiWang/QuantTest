@@ -1,11 +1,12 @@
 # Dependencies
-pip install tushare -i https://pypi.tuna.tsinghua.edu.cn/simple
-pip install pandas
-pip install requests
-pip install lxml
-pip install beautifulsoup4
-pip install matplotlib
-pip install pymongo
+pip3 install tushare -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip3 install pandas
+pip3 install requests
+pip3 install lxml
+pip3 install beautifulsoup4
+pip3 install matplotlib
+pip3 install pymongo
+pip3 install jqdatasdk
 
 
 # MongoDB initialization

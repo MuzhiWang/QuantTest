@@ -35,6 +35,7 @@ class Client(object):
             records = self.stock_daily_db[collection_id].find({Constant.ID: str_utils.date_to_object_id(date)})
             for r in records:
                 return r
+            return None
 
     def get_stock_price_df(self, stock_id, stock_data_type, start_date = None, end_date = None):
         if stock_data_type == StockDataType.Daily:
@@ -43,7 +44,7 @@ class Client(object):
             if end_date == None:
                 end_date = "2019-10-10"
 
-            all_dates = DatetimeUtils.GetIntervalDates(start_date, end_date)
+            all_dates = DatetimeUtils.get_interval_dates(start_date, end_date)
             all_df = pd.DataFrame()
 
             for date in all_dates:
@@ -54,6 +55,9 @@ class Client(object):
                 rec_df = pd.DataFrame(json_obj)
                 all_df = all_df.append(rec_df, ignore_index=True)
                 print(all_df.count())
+
+            if all_df.empty:
+                return None
 
             rec_sort_df = all_df.sort_values(Constant.TRADE_TIME, ascending=True)
 
@@ -67,7 +71,7 @@ class Client(object):
             cur_collection = self.stock_daily_db[stock_id]
             dicts = {
                 Constant.ID: str_utils.date_to_object_id(date),
-                Constant.TRADE_DATE: date,
+                Constant.TRADE_DATE: DatetimeUtils.convert_date_str_to_int(date),
                 Constant.DATAFRAME: json.dumps(df_data.to_dict())
             }
 

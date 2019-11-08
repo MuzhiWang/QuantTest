@@ -9,4 +9,4 @@ class TuShare(object):
 
     def get_1min_stock_price(self, stock_id, start_date, end_date):
         stock_id = stock_id + self.__stock_id_suffix
-        return ts.pro_bar(ts_code=stock_id, start_date=start_date, end_date=end_date, freq='1min')[['trade_time', 'close']]
+        return ts.pro_bar(ts_code=stock_id, start_date=start_date, end_date=end_date, freq='1min')

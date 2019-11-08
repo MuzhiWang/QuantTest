@@ -1,4 +1,5 @@
 import enum
+from Config.StockConfig import StockDataSource
 
 class IndustryCode(enum.Enum):
     sw_l1 = 0 # 申万一级行业
@@ -7,3 +8,11 @@ class IndustryCode(enum.Enum):
     jq_l1 = 3 # 聚宽一级行业
     jq_l2 = 4 # 聚宽二级行业
     zjw = 5  # 证监会行业
+
+
+class Constant:
+    DATE_INDEX = {
+        StockDataSource.TUSHARE: "trade_time",
+        StockDataSource.JQDATA: "date",
+        StockDataSource.TDX: "date"
+    }

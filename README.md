@@ -6,6 +6,7 @@ pip3 install lxml
 pip3 install beautifulsoup4
 pip3 install matplotlib
 pip3 install pymongo
+pip3 install pytdx
 pip3 install jqdatasdk
 
 
@@ -13,3 +14,11 @@ pip3 install jqdatasdk
 mkdir D:\Data\mongodb\db
 mkdir D:\Data\mongodb\log
 {mongodb_path}\mongod.exe  --dbpath D:\Data\mongodb\db
+
+
+
+
+# TODO
+- Improve query df for range dates [2019-01-01, 2019-01-10]
+- Improve store dates in StockProvider
+- Store valid stock dates and query it

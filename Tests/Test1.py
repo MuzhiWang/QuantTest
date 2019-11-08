@@ -1,4 +1,4 @@
-from Config.StockConfig import StockCode, StockDataType
+from Config.StockConfig import StockCode, StockDataType, StockDataSource
 from Gateway.TuShare import TuShare_GW
 from Database.MongoDB import Client
 import Common.StringUtils as str_utils
@@ -6,6 +6,8 @@ from Common import DatetimeUtils
 import unittest
 import bson
 from Gateway.JQData import JQData_GW
+from Gateway.Tdx import TDX_GW
+import pandas as pd
 
 
 
@@ -14,10 +16,11 @@ class Test1(unittest.TestCase):
     csv_path = ".\\test1.csv"
     mongodb_client = Client.Client()
     jqdate_client = JQData_GW()
+    tushare_client = TuShare_GW()
+    tdx_client = TDX_GW()
 
     @unittest.skip
     def test_mongodb_client(self):
-        ts = TuShare_GW()
         start_date = "2019-09-01"
         end_date = "2019-09-04"
 
@@ -25,7 +28,7 @@ class Test1(unittest.TestCase):
         print(ttt)
 
         for stock in StockCode.Test:
-            df = ts.get_1min_stock_price(stock, start_date, end_date)
+            df = self.tushare_client.get_1min_stock_price(stock, start_date, end_date)
             # df = pd.read_csv(csv_path)
             print(df.head(10))
             # df.to_csv(csv_path, index=False)
@@ -33,10 +36,12 @@ class Test1(unittest.TestCase):
             # print(t_df.head(10))
             # print(t_df.to_json())
 
-            self.mongodb_client.upsert_stock_price_df(stock, StockDataType.Daily, df, start_date)
+            self.mongodb_client.upsert_stock_price_df(StockDataSource.JQDATA, StockDataType.DAILY, stock, df,
+                                                      start_date)
             print("success to insert stock %s . with df: %s" % (stock, df.to_json()))
 
-            get_rec = self.mongodb_client.get_stock_price_df(stock, StockDataType.Daily, start_date)
+            get_rec = self.mongodb_client.get_stock_price_df(StockDataSource.JQDATA, StockDataType.DAILY, stock,
+                                                             start_date)
             if get_rec is not None:
                 print(get_rec.head(10))
             # break
@@ -45,7 +50,8 @@ class Test1(unittest.TestCase):
     def test_mongodb_client_get_record_no_record(self):
         start_date = "2019-09-03"
         stock = "000001"
-        res = self.mongodb_client.get_record(StockDataType.Daily, stock, str_utils.date_to_object_id(start_date))
+        res = self.mongodb_client.get_record(StockDataSource.TUSHARE, StockDataType.DAILY, stock,
+                                             str_utils.date_to_object_id(start_date))
         print(res)
 
     @unittest.skip
@@ -54,11 +60,14 @@ class Test1(unittest.TestCase):
         start_date = "2019-09-02"
         end_date = "2019-09-03"
         stock = "000001"
-        res = self.mongodb_client.get_stock_price_df(stock, StockDataType.Daily, start_date, end_date)
+        res = self.mongodb_client.get_stock_price_df(StockDataSource.TUSHARE, StockDataType.DAILY, stock, start_date,
+                                                     end_date)
         print(res.to_string())
 
-        r1 = self.mongodb_client.get_stock_price_df(stock, StockDataType.Daily, start_date, start_date)
-        r2 = self.mongodb_client.get_stock_price_df(stock, StockDataType.Daily, end_date, end_date)
+        r1 = self.mongodb_client.get_stock_price_df(StockDataSource.TUSHARE, StockDataType.DAILY, stock, start_date,
+                                                    start_date)
+        r2 = self.mongodb_client.get_stock_price_df(StockDataSource.TUSHARE, StockDataType.DAILY, stock, end_date,
+                                                    end_date)
         # print(r1.head(10))
         # print(r2.head(10))
         # print(r1.append(r2))
@@ -74,17 +83,39 @@ class Test1(unittest.TestCase):
         print(bson.ObjectId())
         print(bson.ObjectId("5dc5166437b0ee6779f63918"))
         print(DatetimeUtils.get_days_between_dates("2019-10-01", "2019-10-03"))
+        aa = "testestet"
+        a = f"hahah {aa}"
+        print(a)
 
     @unittest.skip
     def test_mongodb_get_and_store_dates_status(self):
-        self.mongodb_client.save_dates(StockDataType.Daily, "000001", "2019-01-11", "2019-02-01")
-        res = self.mongodb_client.get_store_dates(StockDataType.Daily, "000001")
+        self.mongodb_client.save_dates(StockDataSource.JQDATA, StockDataType.DAILY, "000001", "2019-01-11",
+                                       "2019-02-01")
+        res = self.mongodb_client.get_stored_dates(StockDataSource.JQDATA, StockDataType.DAILY, "000001")
         print(res)
 
     @unittest.skip
-    def test_jqdata_client(self):
-        print(self.jqdate_client.get_1min_bars("000001", 10, "2019-10-10"))
+    def test_jqdata_client_get_1min(self):
+        df = self.jqdate_client.get_1min_bars("000001", 250, "2019-09-03")
+        df.to_csv("./CSV/jqdata001.csv", index=False)
+        print(df)
 
+
+    @unittest.skip
+    def test_tushare_client(self):
+        df = self.tushare_client.get_1min_stock_price("000001", "2019-09-02", "2019-09-05")
+        print(df)
+        df.to_csv("./CSV/tushare001.csv")
+
+    # @unittest.skip
+    def test_tdx_client(self):
+        df = self.tdx_client.get_1min_bar("./LC1/sz000001.lc1")
+        print(df)
+        df.to_csv("./CSV/tdx001.csv")
+        print(df.columns.values)
+
+        df['date_index'] = pd.to_datetime(df['date']).dt.strftime(DatetimeUtils.DATE_FORMAT)
+        print(df)
 
 
 if __name__ == '__main__':

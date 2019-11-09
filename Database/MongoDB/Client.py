@@ -8,8 +8,8 @@ from Database.MongoDB.MongoDBConfig import *
 import pandas as pd
 from Common import DatetimeUtils
 
-class Client(object):
 
+class Client(object):
     client = None
     __local_host = "mongodb://localhost:27017/"
 
@@ -31,7 +31,7 @@ class Client(object):
 
     def upsert_record(
             self, stock_data_source: StockDataSource, stock_data_type: StockDataType, collection_id: str, record: dict,
-                      record_id: bson.ObjectId = None):
+            record_id: bson.ObjectId = None):
         db = self.client[self.__get_db_name(stock_data_source, stock_data_type)]
 
         if record_id is None:
@@ -54,7 +54,8 @@ class Client(object):
             return {}
         return res[Constant.STORED_DATES_MAP]
 
-    def save_dates(self, stock_data_source: StockDataSource, stock_data_type: StockDataType, collection_id: str, start_date,
+    def save_dates(self, stock_data_source: StockDataSource, stock_data_type: StockDataType, collection_id: str,
+                   start_date,
                    end_date=None):
         dates_map = self.get_stored_dates(stock_data_source, stock_data_type, collection_id)
         if dates_map is None:
@@ -78,13 +79,13 @@ class Client(object):
         self.upsert_record(stock_data_source, stock_data_type, collection_id, dates_record,
                            Constant.STORED_DATES_STATUS_ID)
 
-
     def get_stock_price_df(
-            self, stock_data_source: StockDataSource, stock_data_type: StockDataType, stock_id, start_date=None, end_date=None):
+            self, stock_data_source: StockDataSource, stock_data_type: StockDataType,
+            stock_id: str, start_date: str = None, end_date: str = None):
         if stock_data_type == StockDataType.DAILY:
-            if start_date == None:
+            if start_date is None:
                 start_date = "2019-01-01"
-            if end_date == None:
+            if end_date is None:
                 end_date = "2019-10-10"
 
             all_dates = DatetimeUtils.get_interval_dates(start_date, end_date)
@@ -106,7 +107,6 @@ class Client(object):
             rec_sort_df = all_df.sort_values(Constant.TRADE_TIME, ascending=True)
 
             return rec_sort_df.reset_index(drop=True)
-
 
     def upsert_stock_price_df(
             self, stock_data_source: StockDataSource, stock_data_type: StockDataType, stock_id: str, df_data, date):

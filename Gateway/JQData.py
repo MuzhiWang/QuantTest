@@ -37,7 +37,8 @@ class JQData_GW(object):
     def get_trade_days(self, start_date: str, end_date: str = None):
         return jq.get_trade_days(start_date=start_date, end_date = end_date)
 
-
+    def normalize_stock_id(self, stock_id: str):
+        return jq.normalize_codes(stock_id)
 
 # gw = JQData_GW()
 # gw.test()
@@ -59,5 +60,5 @@ print(jq.get_query_count())
 
 # print(cfg.IndustryCode.zjw.name)
 
-print(jq.normalize_code("000001"))
+# print(jq.normalize_code("000001"))
 

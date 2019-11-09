@@ -1,7 +1,9 @@
 import enum
 
+
 class Constant:
     MINUTES_IN_DAY = 240
+
 
 class StockDataType(enum.Enum):
     UNDEFINED = 0
@@ -12,14 +14,14 @@ class StockDataType(enum.Enum):
     FIVE_MINS = 5
     ONE_MIN = 6
 
+
 class StockDataSource(enum.Enum):
     UNKNOWN = 0
-    TUSHARE = 1
-    JQDATA = 2
-    TDX = 3
-
+    MIXED = 1
+    TUSHARE = 2
+    JQDATA = 3
+    TDX = 4
 
 
 class StockCode:
     Test = ["000001", "000002", "000003"]
-

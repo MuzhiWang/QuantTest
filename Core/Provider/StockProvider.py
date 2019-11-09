@@ -6,8 +6,8 @@ from Config import StockConfig
 import pandas as pd
 from .ConfigProvider import ConfigProvider
 
-class StockProvider(object):
 
+class StockProvider(object):
     DATE_INDEX = "date_index"
 
     __mongodb_client = None
@@ -18,8 +18,8 @@ class StockProvider(object):
 
     def __init__(self):
         self.__mongodb_client = Client.Client()
-        # self.__jqdata_gw = JQData.JQData_GW()
-        # self.__tushare_gw = TuShare.TuShare_GW()
+        self.__jqdata_gw = JQData.JQData_GW()
+        self.__tushare_gw = TuShare.TuShare_GW()
         self.__tdx_gw = Tdx.TDX_GW()
         self.__config_provider = ConfigProvider()
 
@@ -47,12 +47,31 @@ class StockProvider(object):
 
         return self.__store_stock_df_data(data_source, df, stock_id, force_upsert)
 
-
-    def get_and_store_local_1min_stock(self, data_type: StockConfig.StockDataType, stock_id: str = None, force_upsert=False):
+    def get_and_store_local_1min_stock(
+            self, data_type: StockConfig.StockDataType, stock_id: str = None, force_upsert=False):
         if stock_id is not None:
             raise Exception("unimplemented")
         tdx_dir = self.__config_provider.get_tdx_directory_path()
         self.__get_files_and_store_stock(tdx_dir['sz'], force_upsert)
+
+    def get_stock_1min_df(self, data_source: StockConfig.StockDataSource, stock_id: str,
+                          start_date: str, end_date: str):
+        if data_source == StockConfig.StockDataSource.TDX:
+            df = self.__mongodb_client.get_stock_price_df(data_source, StockConfig.StockDataType.DAILY,
+                                                 stock_id, start_date, end_date)
+            return df
+        else:
+            raise Exception("unimplemented get stock 1 min df for other data source")
+
+    def normalize_stock_id(
+            self, stock_data_source: StockConfig.StockDataSource, stock_id: str):
+        if stock_data_source == StockConfig.StockDataSource.JQDATA:
+            return self.__jqdata_gw.normalize_stock_id(stock_id)
+        elif stock_data_source == StockConfig.StockDataSource.TUSHARE:
+            raise Exception("unimplemented")
+        elif stock_data_source == StockConfig.StockDataSource.TDX:
+            jq_stock_id = self.__jqdata_gw.normalize_stock_id(stock_id)
+            
 
     def __get_files_and_store_stock(self, path: str, force_upsert: bool = False):
         all_files = FileUtils.get_all_files(path)
@@ -61,7 +80,6 @@ class StockProvider(object):
             file_path = f"{path}/{file}"
             df = self.__tdx_gw.get_1min_bar(file_path)
             self.__store_stock_df_data(StockConfig.StockDataSource.TDX, df, stock_name, force_upsert)
-
 
     def __store_stock_df_data(
             self, data_source: StockConfig.StockDataSource, df: pd.DataFrame, stock_id: str, force_upsert: bool):

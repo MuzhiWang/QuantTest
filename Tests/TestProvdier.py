@@ -4,6 +4,7 @@ from Config import StockConfig
 import time
 import os
 from Common import FileUtils
+import pandas as pd
 
 
 class TestProvider(unittest.TestCase):
@@ -49,7 +50,20 @@ class TestProvider(unittest.TestCase):
     # @unittest.skip
     def test_provider_get_1min_stock(self):
         df = self.provider.get_stock_1min_df(
-            StockConfig.StockDataSource.TDX, "000001", "2019-06-25", "2019-11-04")
-        print(df)
+            StockConfig.StockDataSource.TDX, "000001", "2019-07-23", "2019-11-01")
+        df['date'] = pd.to_datetime(df['date'])
+        df['date'] = [int(t.value / (10 ** 9)) for t in df.date]
+        # df = df.drop(columns=['date_index'])
+        df = df[['date', 'close']]
+
+        # print(df.info())
+        # print(df.to_string())
+
+        r = df.rolling(window=3600).mean()
+        print(r.info())
+        print(r.to_string())
+
+
+
 
 

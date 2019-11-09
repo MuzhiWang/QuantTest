@@ -2,12 +2,13 @@ from Config.StockConfig import StockCode, StockDataType, StockDataSource
 from Gateway.TuShare import TuShare_GW
 from Database.MongoDB import Client
 import Common.StringUtils as str_utils
-from Common import DatetimeUtils
+from Common import DatetimeUtils, FileUtils
 import unittest
 import bson
 from Gateway.JQData import JQData_GW
 from Gateway.Tdx import TDX_GW
 import pandas as pd
+from Core.Provider import ConfigProvider
 
 
 
@@ -18,6 +19,7 @@ class Test1(unittest.TestCase):
     jqdate_client = JQData_GW()
     tushare_client = TuShare_GW()
     tdx_client = TDX_GW()
+    cfg_provider = ConfigProvider.ConfigProvider()
 
     @unittest.skip
     def test_mongodb_client(self):
@@ -107,7 +109,7 @@ class Test1(unittest.TestCase):
         print(df)
         df.to_csv("./CSV/tushare001.csv")
 
-    # @unittest.skip
+    @unittest.skip
     def test_tdx_client(self):
         df = self.tdx_client.get_1min_bar("./LC1/sz000001.lc1")
         print(df)
@@ -117,6 +119,10 @@ class Test1(unittest.TestCase):
         df['date_index'] = pd.to_datetime(df['date']).dt.strftime(DatetimeUtils.DATE_FORMAT)
         print(df)
 
+    # @unittest.skip
+    def test_file_utils(self):
+        path = self.cfg_provider.get_tdx_directory_path('sz')
+        print(FileUtils.get_all_files(path))
 
 if __name__ == '__main__':
     unittest.main()

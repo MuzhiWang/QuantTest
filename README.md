@@ -15,10 +15,3 @@ mkdir D:\Data\mongodb\db
 mkdir D:\Data\mongodb\log
 {mongodb_path}\mongod.exe  --dbpath D:\Data\mongodb\db
 
-
-
-
-# TODO
-- Improve query df for range dates [2019-01-01, 2019-01-10]
-- Improve store dates in StockProvider
-- Store valid stock dates and query it

@@ -1,0 +1,8 @@
+{
+  "paths": {
+    "tdx_directory_path": {
+      "sh": "/Users/muzwang/gocode/src/github.com/QuantTest/Tests/LC1/SH/",
+      "sz": "/Users/muzwang/gocode/src/github.com/QuantTest/Tests/LC1/SZ/"
+    }
+  }
+}

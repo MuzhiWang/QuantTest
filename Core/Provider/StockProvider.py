@@ -1,9 +1,10 @@
 from Gateway import TuShare, JQData, Tdx
 from Gateway import Config as gw_cfg
 from Database.MongoDB import Client
-from Common import DatetimeUtils, StringUtils
+from Common import DatetimeUtils, StringUtils, FileUtils
 from Config import StockConfig
 import pandas as pd
+from .ConfigProvider import ConfigProvider
 
 class StockProvider(object):
 
@@ -13,12 +14,14 @@ class StockProvider(object):
     __jqdata_gw = None
     __tushare_gw = None
     __tdx_gw = None
+    __config_provider = None
 
     def __init__(self):
         self.__mongodb_client = Client.Client()
-        self.__jqdata_gw = JQData.JQData_GW()
-        self.__tushare_gw = TuShare.TuShare_GW()
+        # self.__jqdata_gw = JQData.JQData_GW()
+        # self.__tushare_gw = TuShare.TuShare_GW()
         self.__tdx_gw = Tdx.TDX_GW()
+        self.__config_provider = ConfigProvider()
 
     def query_and_store_1min_stock(self, data_source: StockConfig.StockDataSource, stock_id: str, start_date: str,
                                    end_date: str, force_upsert=False):
@@ -35,18 +38,38 @@ class StockProvider(object):
             # df.to_csv(csv_path, index=False)
             # df = pd.read_csv(csv_path)
         elif data_source == StockConfig.StockDataSource.TDX:
-            df = self.__tdx_gw.get_1min_bar("/Users/muzwang/gocode/src/github.com/QuantTest/Tests/LC1/sz000001.lc1")
+            raise Exception(f"tdx 's source data is in local. Please call local api")
         else:
             raise Exception(f"no data source matched for {data_source.name}")
 
         if df is None:
             return None
 
-        df[self.DATE_INDEX] = pd.to_datetime(df[date_index]).dt.strftime(DatetimeUtils.DATE_FORMAT)
-        print(df)
+        return self.__store_stock_df_data(data_source, df, stock_id, force_upsert)
 
+
+    def get_and_store_local_1min_stock(self, data_type: StockConfig.StockDataType, stock_id: str = None, force_upsert=False):
+        if stock_id is not None:
+            raise Exception("unimplemented")
+        tdx_dir = self.__config_provider.get_tdx_directory_path()
+        self.__get_files_and_store_stock(tdx_dir['sz'], force_upsert)
+
+    def __get_files_and_store_stock(self, path: str, force_upsert: bool = False):
+        all_files = FileUtils.get_all_files(path)
+        for file in all_files:
+            stock_name = file.split(".")[0]
+            file_path = f"{path}/{file}"
+            df = self.__tdx_gw.get_1min_bar(file_path)
+            self.__store_stock_df_data(StockConfig.StockDataSource.TDX, df, stock_name, force_upsert)
+
+
+    def __store_stock_df_data(
+            self, data_source: StockConfig.StockDataSource, df: pd.DataFrame, stock_id: str, force_upsert: bool):
+        date_index = gw_cfg.Constant.DATE_INDEX[data_source]
+        df[self.DATE_INDEX] = pd.to_datetime(df[date_index]).dt.strftime(DatetimeUtils.DATE_FORMAT)
         stored_dates = self.__mongodb_client.get_stored_dates(data_source, StockConfig.StockDataType.DAILY,
                                                               stock_id) if not force_upsert else {}
+
         for date_index, df_group in df.groupby([df[self.DATE_INDEX]]):
             print(f"trying to store {date_index}")
             if date_index in stored_dates and stored_dates[date_index]:
@@ -58,8 +81,8 @@ class StockProvider(object):
                                                                 date_index)
                     self.__mongodb_client.save_dates(data_source, StockConfig.StockDataType.DAILY, stock_id,
                                                      date_index)
-                    print(f"SUCCEEDED to upsert data for source {data_source.name} - stock {stock_id} - date {date_index} \n")
+                    print(
+                        f"SUCCEEDED to upsert data for source {data_source.name} - stock {stock_id} - date {date_index} \n")
                 except Exception as e:
-                    print(f"FAILED to upsert data for data for source {data_source.name} - stock {stock_id} - date {date_index}, with exception: {e} \n")
-
-
+                    print(
+                        f"FAILED to upsert data for data for source {data_source.name} - stock {stock_id} - date {date_index}, with exception: {e} \n")

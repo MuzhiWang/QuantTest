@@ -4,7 +4,7 @@ from Database.MongoDB import Client
 from Config.StockConfig import StockDataType
 
 
-class SyncTask(object):
+class OnlineSyncTask(object):
 
     def __init__(self):
         pass
@@ -21,5 +21,5 @@ class SyncTask(object):
             break
 
 
-sync = SyncTask()
+sync = OnlineSyncTask()
 sync.sync()

@@ -1,6 +1,7 @@
 import configparser
 import os
 import json
+from Common import FileUtils
 
 class ConfigProvider(object):
 
@@ -10,7 +11,8 @@ class ConfigProvider(object):
     def __init__(self):
         self.__parser = configparser.ConfigParser()
         current_file = os.path.abspath(os.path.dirname(__file__))
-        config_file_path = os.path.join(current_file, '../../config.json')
+        config_file_path = os.path.join(
+            current_file, FileUtils.convert_file_path_based_on_system('../../config.json'))
         with open(config_file_path, 'r') as config_file:
             self.__config = json.load(config_file)
 

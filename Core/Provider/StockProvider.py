@@ -5,6 +5,7 @@ from Common import DatetimeUtils, StringUtils, FileUtils
 from Config import StockConfig
 import pandas as pd
 from .ConfigProvider import ConfigProvider
+import re
 
 
 class StockProvider(object):
@@ -48,11 +49,17 @@ class StockProvider(object):
         return self.__store_stock_df_data(data_source, df, stock_id, force_upsert)
 
     def get_and_store_local_1min_stock(
-            self, data_type: StockConfig.StockDataType, stock_id: str = None, force_upsert=False):
+            self, data_source: StockConfig.StockDataSource, stock_id: str = None, force_upsert=False):
+        if data_source is not StockConfig.StockDataSource.TDX:
+            raise Exception("only support for TDX in local")
+
         if stock_id is not None:
             raise Exception("unimplemented")
         tdx_dir = self.__config_provider.get_tdx_directory_path()
-        self.__get_files_and_store_stock(tdx_dir['sz'], force_upsert)
+        for exchange, path in tdx_dir.items():
+            print(f"start to get and store local 1min stock data for exchange {exchange} ...")
+            self.__get_local_files_and_store_stock(
+                StockConfig.StockDataSource.TDX, FileUtils.convert_file_path_based_on_system(path), force_upsert)
 
     def get_stock_1min_df(self, data_source: StockConfig.StockDataSource, stock_id: str,
                           start_date: str, end_date: str):
@@ -61,7 +68,7 @@ class StockProvider(object):
                                                  stock_id, start_date, end_date)
             return df
         else:
-            raise Exception("unimplemented get stock 1 min df for other data source")
+            raise Exception("unimplemented get stock 1 min df for other data source except for TDX")
 
     def normalize_stock_id(
             self, stock_data_source: StockConfig.StockDataSource, stock_id: str):
@@ -69,15 +76,20 @@ class StockProvider(object):
             return self.__jqdata_gw.normalize_stock_id(stock_id)
         elif stock_data_source == StockConfig.StockDataSource.TUSHARE:
             raise Exception("unimplemented")
+        # Tdx code like 'sz000001', 'sh600001'
         elif stock_data_source == StockConfig.StockDataSource.TDX:
-            jq_stock_id = self.__jqdata_gw.normalize_stock_id(stock_id)
+            return re.sub('[a-zA-Z]', '', stock_id)
             
 
-    def __get_files_and_store_stock(self, path: str, force_upsert: bool = False):
-        all_files = FileUtils.get_all_files(path)
+    def __get_local_files_and_store_stock(
+            self, data_source: StockConfig.StockDataSource, dir_path: str, force_upsert: bool = False):
+        if data_source is not StockConfig.StockDataSource.TDX:
+            raise Exception("only support for TDX in local")
+
+        all_files = FileUtils.get_all_files(dir_path)
         for file in all_files:
-            stock_name = file.split(".")[0]
-            file_path = f"{path}/{file}"
+            stock_name = self.normalize_stock_id(data_source, file.split(".")[0])
+            file_path = FileUtils.convert_file_path_based_on_system(f"{dir_path}/{file}")
             df = self.__tdx_gw.get_1min_bar(file_path)
             self.__store_stock_df_data(StockConfig.StockDataSource.TDX, df, stock_name, force_upsert)
 

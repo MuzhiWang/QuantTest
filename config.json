@@ -1,8 +1,8 @@
 {
   "paths": {
     "tdx_directory_path": {
-      "sh": "/Users/muzwang/gocode/src/github.com/QuantTest/Tests/LC1/SH/",
-      "sz": "/Users/muzwang/gocode/src/github.com/QuantTest/Tests/LC1/SZ/"
+      "sh": "C:\\Users\\wmz66\\PycharmProjects\\Quant\\QuantTest\\Tests\\LC1\\SH",
+      "sz": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sz\\minline"
     }
   }
 }

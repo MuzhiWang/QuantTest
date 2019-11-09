@@ -2,19 +2,20 @@ from Config.StockConfig import StockCode, StockDataType, StockDataSource
 from Gateway.TuShare import TuShare_GW
 from Database.MongoDB import Client
 import Common.StringUtils as str_utils
-from Common import DatetimeUtils, FileUtils
+from Common import DatetimeUtils, FileUtils, CommonUtils
 import unittest
 import bson
 from Gateway.JQData import JQData_GW
 from Gateway.Tdx import TDX_GW
 import pandas as pd
 from Core.Provider import ConfigProvider
+import re
 
 
 
 class Test1(unittest.TestCase):
 
-    csv_path = ".\\test1.csv"
+    csv_path = FileUtils.convert_file_path_based_on_system(".\\test1.csv")
     mongodb_client = Client.Client()
     jqdate_client = JQData_GW()
     tushare_client = TuShare_GW()
@@ -99,7 +100,7 @@ class Test1(unittest.TestCase):
     @unittest.skip
     def test_jqdata_client_get_1min(self):
         df = self.jqdate_client.get_1min_bars("000001", 250, "2019-09-03")
-        df.to_csv("./CSV/jqdata001.csv", index=False)
+        df.to_csv(FileUtils.convert_file_path_based_on_system("./CSV/jqdata001.csv"), index=False)
         print(df)
 
 
@@ -107,13 +108,14 @@ class Test1(unittest.TestCase):
     def test_tushare_client(self):
         df = self.tushare_client.get_1min_stock_price("000001", "2019-09-02", "2019-09-05")
         print(df)
-        df.to_csv("./CSV/tushare001.csv")
+        df.to_csv(FileUtils.convert_file_path_based_on_system("./CSV/tushare001.csv"))
 
     @unittest.skip
     def test_tdx_client(self):
-        df = self.tdx_client.get_1min_bar("./LC1/sz000001.lc1")
+        df = self.tdx_client.get_1min_bar(
+            FileUtils.convert_file_path_based_on_system(".\\LC1\\SZ\\sz000001.lc1"))
         print(df)
-        df.to_csv("./CSV/tdx001.csv")
+        df.to_csv(FileUtils.convert_file_path_based_on_system(".\\CSV\\tdx001.csv"))
         print(df.columns.values)
 
         df['date_index'] = pd.to_datetime(df['date']).dt.strftime(DatetimeUtils.DATE_FORMAT)
@@ -121,8 +123,15 @@ class Test1(unittest.TestCase):
 
     # @unittest.skip
     def test_file_utils(self):
-        path = self.cfg_provider.get_tdx_directory_path('sz')
+        path = self.cfg_provider.get_tdx_directory_path('sh')
+        path = FileUtils.convert_file_path_based_on_system(path)
         print(FileUtils.get_all_files(path))
+
+    # @unittest.skip
+    def test_common_utils(self):
+        print(CommonUtils.get_os_system())
+        t = "sz000001"
+        print(f"after replace:" +  re.sub('[a-zA-Z]', '', t))
 
 if __name__ == '__main__':
     unittest.main()

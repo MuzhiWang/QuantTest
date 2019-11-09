@@ -7,6 +7,7 @@ import bson
 from Database.MongoDB.MongoDBConfig import *
 import pandas as pd
 from Common import DatetimeUtils
+from Gateway.Config import Constant as gw_const
 
 
 class Client(object):
@@ -95,16 +96,17 @@ class Client(object):
                 get_rec = self.get_record(stock_data_source, StockDataType.DAILY, stock_id,
                                           str_utils.date_to_object_id(date))
                 if get_rec is None:
+                    print(f"\nget EMPTY record of date '{date}' for {stock_id} in source {stock_data_source.name}")
                     continue
                 json_obj = json.loads(get_rec[Constant.DATAFRAME])
                 rec_df = pd.DataFrame(json_obj)
                 all_df = all_df.append(rec_df, ignore_index=True)
-                print(all_df.count())
+                # print(all_df.count())
 
             if all_df.empty:
                 return None
 
-            rec_sort_df = all_df.sort_values(Constant.TRADE_TIME, ascending=True)
+            rec_sort_df = all_df.sort_values(gw_const.DATE_INDEX[stock_data_source], ascending=True)
 
             return rec_sort_df.reset_index(drop=True)
 

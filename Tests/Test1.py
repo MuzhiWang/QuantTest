@@ -10,6 +10,7 @@ from Gateway.Tdx import TDX_GW
 import pandas as pd
 from Core.Provider import ConfigProvider
 import re
+import time
 
 
 
@@ -21,6 +22,12 @@ class Test1(unittest.TestCase):
     tushare_client = TuShare_GW()
     tdx_client = TDX_GW()
     cfg_provider = ConfigProvider.ConfigProvider()
+
+    def setUp(self):
+        self.time = time.time()
+
+    def tearDown(self):
+        print(f"{self.__str__()} spend time: {(time.time() - self.time) * 1000} ms")
 
     @unittest.skip
     def test_mongodb_client(self):
@@ -111,8 +118,8 @@ class Test1(unittest.TestCase):
         df.to_csv(FileUtils.convert_file_path_based_on_system("./CSV/tushare001.csv"))
 
     @unittest.skip
-    def test_tdx_client(self):
-        df = self.tdx_client.get_1min_bar(
+    def test_tdx_client_get_local_1min_bars(self):
+        df = self.tdx_client.get_local_1min_bars(
             FileUtils.convert_file_path_based_on_system(".\\LC1\\SZ\\sz000001.lc1"))
         print(df)
         df.to_csv(FileUtils.convert_file_path_based_on_system(".\\CSV\\tdx001.csv"))
@@ -122,12 +129,18 @@ class Test1(unittest.TestCase):
         print(df)
 
     # @unittest.skip
+    def test_tdx_client_get_realtime_stock(self):
+        df = self.tdx_client.get_realtime_stock_1min_bars("000005", "2019-01-01")
+        print(df.to_string())
+
+
+    # @unittest.skip
     def test_file_utils(self):
         path = self.cfg_provider.get_tdx_directory_path('sh')
         path = FileUtils.convert_file_path_based_on_system(path)
         print(FileUtils.get_all_files(path))
 
-    # @unittest.skip
+    @unittest.skip
     def test_common_utils(self):
         print(CommonUtils.get_os_system())
         t = "sz000001"

@@ -5,6 +5,7 @@ import time
 import os
 from Common import FileUtils
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 class TestProvider(unittest.TestCase):
@@ -18,7 +19,7 @@ class TestProvider(unittest.TestCase):
     def tearDown(self):
         print(f"{self.__str__()} spend time: {(time.time() - self.time) * 1000} ms")
 
-    @unittest.skip
+    # @unittest.skip
     def test_provider_tushare(self):
         start = time.time()
         self.provider.query_and_store_1min_stock(StockConfig.StockDataSource.TUSHARE, "000001", "2019-04-02",
@@ -29,9 +30,10 @@ class TestProvider(unittest.TestCase):
     @unittest.skip
     def test_provider_tdx(self):
         start = time.time()
-        self.provider.query_and_store_1min_stock(StockConfig.StockDataSource.TDX, "000001", "2019-04-02",
+        df = self.provider.query_and_store_1min_stock(StockConfig.StockDataSource.JQDATA, "000001", "2019-04-02",
                                                  "2019-07-05")
         print(f"test_provider spend time: {(time.time() - start) * 1000} ms")
+        print(df.to_string())
 
     # @unittest.skip
     def test_config_provider(self):
@@ -53,15 +55,22 @@ class TestProvider(unittest.TestCase):
             StockConfig.StockDataSource.TDX, "000001", "2019-07-23", "2019-11-01")
         df['date'] = pd.to_datetime(df['date'])
         df['date'] = [int(t.value / (10 ** 9)) for t in df.date]
-        # df = df.drop(columns=['date_index'])
         df = df[['date', 'close']]
 
         # print(df.info())
         # print(df.to_string())
 
         r = df.rolling(window=3600).mean()
-        print(r.info())
-        print(r.to_string())
+        rr = r.plot(x = 'date', y = 'close', color = 'red')
+        plt.show()
+
+        # x = range(1, 5)
+        # y = range(1,5)
+        # plt.plot(x, y)
+        # plt.show()
+        print(r)
+        # print(r.info())
+        # print(r.to_string())
 
 
 

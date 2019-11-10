@@ -92,16 +92,18 @@ class Client(object):
             all_dates = DatetimeUtils.get_interval_dates(start_date, end_date)
             all_df = pd.DataFrame()
 
+            empty_records = []
             for date in all_dates:
                 get_rec = self.get_record(stock_data_source, StockDataType.DAILY, stock_id,
                                           str_utils.date_to_object_id(date))
                 if get_rec is None:
-                    print(f"\nget EMPTY record of date '{date}' for {stock_id} in source {stock_data_source.name}")
+                    empty_records.append(date)
                     continue
                 json_obj = json.loads(get_rec[Constant.DATAFRAME])
                 rec_df = pd.DataFrame(json_obj)
                 all_df = all_df.append(rec_df, ignore_index=True)
                 # print(all_df.count())
+            print(f"\nget EMPTY record for {stock_id} in source {stock_data_source.name} of dates: {empty_records}")
 
             if all_df.empty:
                 return None

@@ -3,7 +3,7 @@ import platform
 
 def get_os_system() -> Config.OsSystem:
     sys = platform.system()
-    print(f"system is {sys}")
+    # print(f"system is {sys}")
     if sys == "Linux":
         return Config.OsSystem.LINUX
     elif sys == "Darwin":

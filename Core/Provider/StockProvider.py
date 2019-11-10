@@ -30,9 +30,11 @@ class StockProvider(object):
         if date_index is None:
             raise Exception("date index is not found")
 
+        df = None
         if data_source == StockConfig.StockDataSource.JQDATA:
             days = DatetimeUtils.get_days_between_dates(start_date, end_date)
             counts = days * StockConfig.Constant.MINUTES_IN_DAY
+            raise Exception(f"JQDATA 's source data unimplemented")
         elif data_source == StockConfig.StockDataSource.TUSHARE:
             df = self.__tushare_gw.get_1min_stock_price(stock_id, start_date, end_date)
             # csv_path = "./test111.csv"
@@ -46,7 +48,8 @@ class StockProvider(object):
         if df is None:
             return None
 
-        return self.__store_stock_df_data(data_source, df, stock_id, force_upsert)
+        self.__store_stock_df_data(data_source, df, stock_id, force_upsert)
+        return df
 
     def get_and_store_local_1min_stock(
             self, data_source: StockConfig.StockDataSource, stock_id: str = None, force_upsert=False):
@@ -90,7 +93,7 @@ class StockProvider(object):
         for file in all_files:
             stock_name = self.normalize_stock_id(data_source, file.split(".")[0])
             file_path = FileUtils.convert_file_path_based_on_system(f"{dir_path}/{file}")
-            df = self.__tdx_gw.get_1min_bar(file_path)
+            df = self.__tdx_gw.get_local_1min_bars(file_path)
             self.__store_stock_df_data(StockConfig.StockDataSource.TDX, df, stock_name, force_upsert)
 
     def __store_stock_df_data(
@@ -100,10 +103,12 @@ class StockProvider(object):
         stored_dates = self.__mongodb_client.get_stored_dates(data_source, StockConfig.StockDataType.DAILY,
                                                               stock_id) if not force_upsert else {}
 
+        existed_date = []
+        succeeded_date = []
+        print(f"trying to store {stock_id}")
         for date_index, df_group in df.groupby([df[self.DATE_INDEX]]):
-            print(f"trying to store {date_index}")
             if date_index in stored_dates and stored_dates[date_index]:
-                print(f"the data EXISTS for source {data_source.name} - stock {stock_id} - date {date_index} \n")
+                existed_date.append(date_index)
             else:
                 try:
                     self.__mongodb_client.upsert_stock_price_df(data_source,
@@ -111,8 +116,10 @@ class StockProvider(object):
                                                                 date_index)
                     self.__mongodb_client.save_dates(data_source, StockConfig.StockDataType.DAILY, stock_id,
                                                      date_index)
-                    print(
-                        f"SUCCEEDED to upsert data for source {data_source.name} - stock {stock_id} - date {date_index} \n")
+                    succeeded_date.append(date_index)
                 except Exception as e:
                     print(
                         f"FAILED to upsert data for data for source {data_source.name} - stock {stock_id} - date {date_index}, with exception: {e} \n")
+
+        print(f"\nthe data EXISTS for source {data_source.name} - stock {stock_id} - dates: {existed_date}")
+        print(f"SUCCEEDED to upsert data for source {data_source.name} - stock {stock_id} - dates: {succeeded_date} \n")

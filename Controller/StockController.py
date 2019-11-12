@@ -12,8 +12,9 @@ class StockController(object):
 
 
     def get_industry_stocks_with_ma(self, start_date: str, end_date: str, ma_list: [],
-                                    industry_code: cfg.IndustryCode = None, industry_id: str = None):
-        stock_with_ma_map = {}
+                                    industry_code: cfg.IndustryCode = None, industry_ids: [] = None):
+        industry_stocks_with_ma_map = {}
+        stocks_with_ma_map = {}
         if industry_code is not None:
             industry_name_df = self.__stock_provider.get_industries(industry_code)['name']
             industry_name_map = {}
@@ -23,23 +24,28 @@ class StockController(object):
                 industry_name_map[index] = industry_name_map[industry_name]
 
             for ind_id, ind_title in industry_name_map.items():
+                industry_stocks_with_ma_map[ind_id] = {}
                 stock_ids = self.__stock_provider.get_industry_stocks(ind_id)
                 print(f"start to query {len(stock_ids)} stocks of industry: {ind_id} - {ind_title}")
                 for s_id in stock_ids:
                     stock_id = self.__stock_provider.normalize_stock_id(s_id)
-                    if stock_id not in stock_with_ma_map:
-                        stock_with_ma_map[stock_id] = self.get_stock_with_ma(stock_id, start_date, end_date, ma_list)
-        elif industry_id is not None:
-            stock_ids = self.__stock_provider.get_industry_stocks(industry_id)
-            print(f"start to query {len(stock_ids)} stocks of industry: {industry_id}")
-            for s_id in stock_ids:
-                stock_id = self.__stock_provider.normalize_stock_id(StockDataSource.JQDATA, s_id)
-                if stock_id not in stock_with_ma_map:
-                    stock_with_ma_map[stock_id] = self.get_stock_with_ma(stock_id, start_date, end_date, ma_list)
+                    stock_with_ma = stocks_with_ma_map[stock_id] if stock_id in stocks_with_ma_map else \
+                        self.get_stock_with_ma(stock_id, start_date, end_date, ma_list)
+                    industry_stocks_with_ma_map[ind_id][stock_id] = stock_with_ma
+        elif industry_ids is not None:
+            for ind_id in industry_ids:
+                industry_stocks_with_ma_map[ind_id] = {}
+                stock_ids = self.__stock_provider.get_industry_stocks(ind_id)
+                print(f"start to query {len(stock_ids)} stocks of industry: {ind_id}")
+                for s_id in stock_ids:
+                    stock_id = self.__stock_provider.normalize_stock_id(StockDataSource.JQDATA, s_id)
+                    stock_with_ma = stocks_with_ma_map[stock_id] if stock_id in stocks_with_ma_map else \
+                        self.get_stock_with_ma(stock_id, start_date, end_date, ma_list)
+                    industry_stocks_with_ma_map[ind_id][stock_id] = stock_with_ma
         else:
             raise Exception("industry code or id must exist one")
 
-        return stock_with_ma_map
+        return industry_stocks_with_ma_map
 
 
     def get_stock_with_ma(self, stock_id: str, start_date: str, end_date: str, ma_list: []):

@@ -36,7 +36,7 @@ class TestController(unittest.TestCase):
             start_date="2019-09-09",
             end_date="2019-11-01",
             ma_list=[DF_MA.MACatogary.TWNTY_DAYS, DF_MA.MACatogary.TEN_DAYS, DF_MA.MACatogary.FIVE_DAYS],
-            industry_id="850941"
+            industry_ids=["801770"]
         )
 
-        print(dic)
+        # print(dic)

@@ -21,11 +21,11 @@ class TDX_GW(object):
         data = self.__lc_min_bar_reader.parse_data_by_file(file_path)
         df = pd.DataFrame(data=data)
         # df = df['date', 'open', 'high', 'low', 'close', 'amount', 'volume']
-        print(f"TDX get 1min bar time spent: {(time.time() - start) * 1000} ms")
+        # print(f"TDX get 1min bar time spent: {(time.time() - start) * 1000} ms")
 
         return df[['date', 'open', 'high', 'low', 'close', 'amount', 'volume']]
 
-    def get_realtime_stock_1min_bars(self, stock_id: str, start_time: str):
+    def get_realtime_stock_1min_bars(self, stock_id: str):
         with self.__tdx_api.connect(self.__connected_ip, self.__connected_port):
             df = self.__tdx_api.to_df(
                 self.__tdx_api.get_security_bars(8, 0, stock_id, 0, 10))  # 返回DataFrame

@@ -6,6 +6,7 @@ from Config import StockConfig
 import pandas as pd
 from .ConfigProvider import ConfigProvider
 import re
+import Gateway.Config as cfg
 
 
 class StockProvider(object):
@@ -73,6 +74,12 @@ class StockProvider(object):
         else:
             raise Exception("unimplemented get stock 1 min df for other data source except for TDX")
 
+    def get_industries(self, industry_code: cfg.IndustryCode):
+        return self.__jqdata_gw.get_industries(name=industry_code.name)
+
+    def get_industry_stocks(self, industry_id: str):
+        return self.__jqdata_gw.get_industry_stocks(industry_id)
+
     def normalize_stock_id(
             self, stock_data_source: StockConfig.StockDataSource, stock_id: str):
         if stock_data_source == StockConfig.StockDataSource.JQDATA:
@@ -121,5 +128,5 @@ class StockProvider(object):
                     print(
                         f"FAILED to upsert data for data for source {data_source.name} - stock {stock_id} - date {date_index}, with exception: {e} \n")
 
-        print(f"\nthe data EXISTS for source {data_source.name} - stock {stock_id} - dates: {existed_date}")
+        # print(f"\nthe data EXISTS for source {data_source.name} - stock {stock_id} - dates: {existed_date}")
         print(f"SUCCEEDED to upsert data for source {data_source.name} - stock {stock_id} - dates: {succeeded_date} \n")

@@ -6,3 +6,4 @@
 - For online provider, if the daily query data counts is not enough, should not store the data 
 - update_one -> update_many for upserting batch dates' data
 - Refactor tests
+- Add log system

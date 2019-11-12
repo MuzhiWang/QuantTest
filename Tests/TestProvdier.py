@@ -49,7 +49,7 @@ class TestProvider(unittest.TestCase):
         self.provider.get_and_store_local_1min_stock(StockConfig.StockDataSource.TDX)
         print(f"test_provider tdx store local spend time: {(time.time() - start) * 1000} ms")
 
-    # @unittest.skip
+    @unittest.skip
     def test_provider_get_1min_stock(self):
         df = self.provider.get_stock_1min_df(
             StockConfig.StockDataSource.TDX, "000001", "2019-07-23", "2019-11-01")
@@ -71,6 +71,11 @@ class TestProvider(unittest.TestCase):
         print(r)
         # print(r.info())
         # print(r.to_string())
+
+    # @unittest.skip
+    def test_normalize_stock_id(self):
+        res = self.provider.normalize_stock_id(StockConfig.StockDataSource.JQDATA, "000019.XSHE")
+        print(res)
 
 
 

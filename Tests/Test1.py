@@ -11,6 +11,7 @@ import pandas as pd
 from Core.Provider import ConfigProvider
 import re
 import time
+import Gateway.Config as cfg
 
 
 
@@ -110,6 +111,26 @@ class Test1(unittest.TestCase):
         df.to_csv(FileUtils.convert_file_path_based_on_system("./CSV/jqdata001.csv"), index=False)
         print(df)
 
+    # @unittest.skip
+    def test_jqdata_client_get_industries(self):
+        res = self.jqdate_client.get_industries(cfg.IndustryCode.sw_l1)
+        print(res['name'])
+
+        for index, row in res.iterrows():
+            industry_info = row['name'].split()
+            stocks_in_industries = self.jqdate_client.get_industry_stocks(index)
+            print(f"start to query {len(stocks_in_industries)} stocks of industry: {index} "
+                  f"- {industry_info[0]}")
+
+        # res2 = self.jqdate_client.get_industry_stocks('HY005')
+        # print(len(res2))
+        # print(res2)
+
+    # @unittest.skip
+    def test_jqdata_client_normalize_stock_id(self):
+        res = self.jqdate_client.normalize_stock_id("000019.XSHE")
+        print(res)
+
 
     @unittest.skip
     def test_tushare_client(self):
@@ -130,7 +151,7 @@ class Test1(unittest.TestCase):
 
     # @unittest.skip
     def test_tdx_client_get_realtime_stock(self):
-        df = self.tdx_client.get_realtime_stock_1min_bars("000005", "2019-01-01")
+        df = self.tdx_client.get_realtime_stock_1min_bars("000005")
         print(df.to_string())
 
 

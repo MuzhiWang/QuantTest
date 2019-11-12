@@ -1,4 +1,5 @@
 import jqdatasdk as jq
+import jqdatasdk.utils as jq_utils
 from Common import DatetimeUtils, StringUtils
 import Gateway.Config as cfg
 
@@ -7,7 +8,6 @@ class JQData_GW(object):
 
     __user_name = "18611823120"
     __pw = "823120"
-    client = None
 
     def __init__(self):
         jq.auth(self.__user_name, self.__pw)
@@ -38,7 +38,7 @@ class JQData_GW(object):
         return jq.get_trade_days(start_date=start_date, end_date = end_date)
 
     def normalize_stock_id(self, stock_id: str):
-        return jq.normalize_codes(stock_id)
+        return jq_utils.normal_security_code(stock_id)
 
 # gw = JQData_GW()
 # gw.test()

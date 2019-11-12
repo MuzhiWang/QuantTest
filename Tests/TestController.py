@@ -2,6 +2,7 @@ import unittest
 import time
 from Controller import StockController
 from Controller.Entities import DF_MA
+import pandas as pd
 
 class TestController(unittest.TestCase):
 
@@ -24,4 +25,7 @@ class TestController(unittest.TestCase):
         ma_list = [DF_MA.MACatogary.TWNTY_DAYS, DF_MA.MACatogary.FIFTEEN_DAYS, DF_MA.MACatogary.EIGHT_DAYS]
         df_ma = self.__stock_controller.get_stock_ma("000001", "2019-07-25", "2019-11-08", ma_list)
         # print(df_ma.df)
-        # print(df_ma.ma_dict)
+        print(df_ma.columns.values)
+
+        df_ma['date'] = pd.to_datetime(df_ma['date'], unit='s')
+        # print(df_ma.to_string())

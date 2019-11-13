@@ -21,6 +21,7 @@ class StockDataSource(enum.Enum):
     TUSHARE = 2
     JQDATA = 3
     TDX = 4
+    LOCAL = 5
 
 
 class StockCode:

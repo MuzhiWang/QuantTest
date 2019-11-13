@@ -69,7 +69,7 @@ class StockProvider(object):
                           start_date: str, end_date: str):
         if data_source == StockConfig.StockDataSource.TDX:
             df = self.__mongodb_client.get_stock_price_df(data_source, StockConfig.StockDataType.DAILY,
-                                                 stock_id, start_date, end_date)
+                                                          stock_id, start_date, end_date)
             return df
         else:
             raise Exception("unimplemented get stock 1 min df for other data source except for TDX")
@@ -89,7 +89,6 @@ class StockProvider(object):
         # Tdx code like 'sz000001', 'sh600001'
         elif stock_data_source == StockConfig.StockDataSource.TDX:
             return re.sub('[a-zA-Z]', '', stock_id)
-            
 
     def __get_local_files_and_store_stock(
             self, data_source: StockConfig.StockDataSource, dir_path: str, force_upsert: bool = False):

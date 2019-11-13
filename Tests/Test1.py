@@ -12,23 +12,23 @@ from Core.Provider import ConfigProvider
 import re
 import time
 import Gateway.Config as cfg
-
+from Common.Log.Logger import Logger
 
 
 class Test1(unittest.TestCase):
-
     csv_path = FileUtils.convert_file_path_based_on_system(".\\test1.csv")
     mongodb_client = Client.Client()
     jqdate_client = JQData_GW()
     tushare_client = TuShare_GW()
     tdx_client = TDX_GW()
     cfg_provider = ConfigProvider.ConfigProvider()
+    logger = Logger.get_logger(__name__)
 
     def setUp(self):
         self.time = time.time()
 
     def tearDown(self):
-        print(f"{self.__str__()} spend time: {(time.time() - self.time) * 1000} ms")
+        self.logger.debug(f"{self.__str__()} spend time: {(time.time() - self.time) * 1000} ms")
 
     @unittest.skip
     def test_mongodb_client(self):
@@ -131,7 +131,6 @@ class Test1(unittest.TestCase):
         res = self.jqdate_client.normalize_stock_id("000019.XSHE")
         print(res)
 
-
     @unittest.skip
     def test_tushare_client(self):
         df = self.tushare_client.get_1min_stock_price("000001", "2019-09-02", "2019-09-05")
@@ -152,20 +151,20 @@ class Test1(unittest.TestCase):
     # @unittest.skip
     def test_tdx_client_get_realtime_stock(self):
         df = self.tdx_client.get_realtime_stock_1min_bars("000005")
-        print(df.to_string())
-
+        self.logger.debug(df.to_string())
 
     # @unittest.skip
     def test_file_utils(self):
         path = self.cfg_provider.get_tdx_directory_path('sh')
         path = FileUtils.convert_file_path_based_on_system(path)
-        print(FileUtils.get_all_files(path))
+        self.logger.debug(FileUtils.get_all_files(path))
 
     @unittest.skip
     def test_common_utils(self):
         print(CommonUtils.get_os_system())
         t = "sz000001"
-        print(f"after replace:" +  re.sub('[a-zA-Z]', '', t))
+        self.logger.debug(f"after replace:" + re.sub('[a-zA-Z]', '', t))
+
 
 if __name__ == '__main__':
     unittest.main()

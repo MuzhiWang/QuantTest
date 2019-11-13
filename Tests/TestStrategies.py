@@ -4,26 +4,47 @@ from Controller import StockController
 from Controller.Entities import DF_MA
 import pandas as pd
 from Strategies.EightDiagrams import EightDiagrams
+from Common.Log.Logger import Logger
+
+from Controller.StockController import StockController
 
 
-class MyTestCase(unittest.TestCase):
+class TestStrategies(unittest.TestCase):
 
     __strategy = EightDiagrams()
-
-    @unittest.skip
-    def test_something(self):
-        self.assertEqual(True, False)
+    __stock_controller = StockController()
+    __logger = Logger.get_logger(__name__)
 
     # @unittest.skip
-    def test_stock_controller_get_industry_stocks_with_ma(self):
-        dic = self.__strategy.get_industry_stocks_with_ma(
+    def test_eight_diagrams_get_industry_stocks_with_ma(self):
+        dic = self.__strategy.get_industry_stocks_with_eight_diagrams(
             start_date="2019-09-09",
             end_date="2019-11-01",
             ma_list=[DF_MA.MACatogary.TWNTY_DAYS, DF_MA.MACatogary.TEN_DAYS, DF_MA.MACatogary.FIVE_DAYS],
             industry_ids=["801770"]
         )
 
-        # print(dic)
+        TestStrategies.__logger.debug(dic)
+
+    def test_eight_diagrams_get_ed_score(self):
+        ma_list = [DF_MA.MACatogary.TWNTY_DAYS, DF_MA.MACatogary.TEN_DAYS, DF_MA.MACatogary.FIVE_DAYS]
+        stock_with_ma = self.__stock_controller.get_stock_with_ma(
+            "000001", "2019-07-25", "2019-11-01", ma_list)
+        # stock_with_ma.to_csv("./stock_with_ma.csv")
+
+        new_df = stock_with_ma.dropna().iloc[:, 1:].sum(axis=1)
+        print(new_df.to_string())
+
+        # res = stock_with_ma.apply(
+        #     (lambda row: EightDiagrams.get_eight_diagrams_score(row, ma_list)))
+
+        res = pd.DataFrame()
+        ed_arr = []
+        for _, row in stock_with_ma.iterrows():
+            ed_arr.append(EightDiagrams.get_eight_diagrams_score(row, ma_list))
+        res['eight_diagrams'] = ed_arr
+
+        print(res.to_string())
 
 if __name__ == '__main__':
     unittest.main()

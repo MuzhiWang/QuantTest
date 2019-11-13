@@ -8,6 +8,7 @@ from Database.MongoDB.MongoDBConfig import *
 import pandas as pd
 from Common import DatetimeUtils
 from Gateway.Config import Constant as gw_const
+from Common.Log.Logger import Logger
 
 
 class Client(object):
@@ -16,6 +17,7 @@ class Client(object):
 
     def __init__(self):
         self.client = pymongo.MongoClient(self.__local_host)
+        self.__logger = Logger.get_logger(__name__)
 
         # Check database exists
         dblist = self.client.list_database_names()
@@ -103,7 +105,7 @@ class Client(object):
                 rec_df = pd.DataFrame(json_obj)
                 all_df = all_df.append(rec_df, ignore_index=True)
                 # print(all_df.count())
-            print(f"\nget EMPTY record for {stock_id} in source {stock_data_source.name} of dates: {empty_records}")
+            self.__logger.info(f"\nget EMPTY record for {stock_id} in source {stock_data_source.name} of dates: {empty_records}")
 
             if all_df.empty:
                 return None

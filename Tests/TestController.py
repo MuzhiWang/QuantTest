@@ -17,8 +17,15 @@ class TestController(unittest.TestCase):
 
     # @unittest.skip
     def test_DF_MA_entity(self):
-        ma_list = [DF_MA.MACatogary.TWNTY_DAYS, DF_MA.MACatogary.EIGHT_DAYS]
+        ma_list = [DF_MA.MACatogary.TWNTY_DAYS, DF_MA.MACatogary.EIGHT_DAYS, DF_MA.MACatogary.FIFTEEN_DAYS]
         print(DF_MA.Constant.ma_category_mins_map[ma_list[0]])
+
+        sort_res = sorted(ma_list, key=TestController.__sort)
+        print(sort_res)
+
+    @staticmethod
+    def __sort(ma: DF_MA.MACatogary):
+        return ma.value
 
     # @unittest.skip
     def test_stock_controller_get_stock_ma(self):

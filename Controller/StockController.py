@@ -31,7 +31,7 @@ class StockController(object):
             r_df = df.rolling(window=DF_MA.Constant.ma_category_mins_map[ma]).mean()
             ret_df[ma.name] = r_df['close']
 
-        return ret_df
+        return ret_df.round(2)
 
     def get_index_ma(self, index_id: str, ma_list: []):
         pass

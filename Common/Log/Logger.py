@@ -1,14 +1,18 @@
 import logging
 import sys
 from logging.handlers import TimedRotatingFileHandler
+import os
+from Common import FileUtils
 
-FORMATTER = logging.Formatter("%(asctime)s — %(name)s — %(levelname)s — %(message)s")
-LOG_FILE = "quant_log.log"
+FORMATTER = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+LOG_FILE_NAME = "quant_log.log"
 
 CONSOLE_LEVEL = logging.DEBUG
-FILE_LEVEL = logging.DEBUG
+FILE_LEVEL = logging.WARN
 
 class Logger:
+
+    __logger = None
 
     @classmethod
     def __get_console_handler(cls):
@@ -19,7 +23,11 @@ class Logger:
 
     @classmethod
     def __get_file_handler(cls):
-        file_handler = TimedRotatingFileHandler(LOG_FILE, when='midnight')
+        current_file = os.path.abspath(os.path.dirname(__file__))
+        log_path = os.path.join(
+            current_file, FileUtils.convert_file_path_based_on_system('..\\..\\Logs\\' + LOG_FILE_NAME))
+
+        file_handler = TimedRotatingFileHandler(log_path, when='midnight')
         file_handler.setFormatter(FORMATTER)
         file_handler.setLevel(FILE_LEVEL)
 
@@ -27,11 +35,13 @@ class Logger:
 
     @classmethod
     def get_logger(cls, logger_name):
-        # logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
-        logger = logging.getLogger(logger_name)
-        logger.setLevel(logging.DEBUG)  # better to have too much log than not enough
-        logger.addHandler(cls.__get_console_handler())
-        logger.addHandler(cls.__get_file_handler())
-        # with this pattern, it's rarely necessary to propagate the error up to parent
-        logger.propagate = False
-        return logger
+        if Logger.__logger is None:
+            # logging.basicConfig(format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+            logger = logging.getLogger(logger_name)
+            logger.setLevel(logging.DEBUG)  # better to have too much log than not enough
+            logger.addHandler(cls.__get_console_handler())
+            logger.addHandler(cls.__get_file_handler())
+            # with this pattern, it's rarely necessary to propagate the error up to parent
+            logger.propagate = False
+            Logger.__logger = logger
+        return Logger.__logger

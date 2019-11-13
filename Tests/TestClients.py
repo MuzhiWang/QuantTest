@@ -15,7 +15,7 @@ import Gateway.Config as cfg
 from Common.Log.Logger import Logger
 
 
-class Test1(unittest.TestCase):
+class TestClients(unittest.TestCase):
     csv_path = FileUtils.convert_file_path_based_on_system(".\\test1.csv")
     mongodb_client = Client.Client()
     jqdate_client = JQData_GW()
@@ -150,7 +150,7 @@ class Test1(unittest.TestCase):
 
     # @unittest.skip
     def test_tdx_client_get_realtime_stock(self):
-        df = self.tdx_client.get_realtime_stock_1min_bars("000005")
+        df = self.tdx_client.get_realtime_stock_1min_bars("002807")
         self.logger.debug(df.to_string())
 
     # @unittest.skip

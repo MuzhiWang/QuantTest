@@ -1,3 +1,4 @@
+from __future__ import division
 from Core.Provider import StockProvider
 from Config.StockConfig import StockDataSource
 import pandas as pd
@@ -45,9 +46,6 @@ class EightDiagrams(object):
             industry_name_df = self.__stock_provider.get_industries(industry_code)['name']
             # industry_name_map = {}
             for index, row in industry_name_df.iterrows():
-                # industry_name = row['name'].split()[0]
-                # {id: title}
-                # industry_name_map[index] = industry_name_map[industry_name]
                 industry_ids.append(index)
 
             # for ind_id, ind_title in industry_name_map.items():
@@ -70,49 +68,61 @@ class EightDiagrams(object):
             industry_stocks_with_ma_map[ind_id] = {}
             stock_ids = self.__stock_provider.get_industry_stocks(ind_id)
             self.__logger.debug(f"start to query {len(stock_ids)} stocks of industry: {ind_id}")
-            valid_stock_count = 0
 
             for s_id in stock_ids:
                 stock_id = self.__stock_provider.normalize_stock_id(StockDataSource.JQDATA, s_id)
 
                 if stock_id in stocks_with_ma_map:
-                    stock_with_ma = stocks_with_ma_map[stock_id]
-                    ind_ed_df[stock_id] = stocks_with_eight_diagrams_map[stock_id][EIGHT_DIAGRAMS_COL]
-                    valid_stock_count += 1
+                    # stock_with_ma = stocks_with_ma_map[stock_id]
+                    # ind_ed_df[stock_id] = stocks_with_eight_diagrams_map[stock_id][EIGHT_DIAGRAMS_COL]
+                    raise Exception("Unimplementation")
                 else:
                     stock_with_ma = \
                         self.__stock_controller.get_stock_with_ma(stock_id, start_date, end_date, ma_list).dropna()
 
                     # generate eight diagram scores
-                    new_df = pd.DataFrame()
+                    stock_ed_df = pd.DataFrame()
 
                     if stock_with_ma is None or stock_with_ma.empty:
                         self.__logger.warn(f"get NONE stock with ma for stock {stock_id}")
                     else:
-                        new_df['date'] = stock_with_ma['date']
+                        stock_ed_df['date'] = stock_with_ma['date']
                         # new_df['eight_diagrams'] = stock_with_ma.apply(
                         #     (lambda row: EightDiagrams.get_eight_diagrams_score(row, ma_list)), axis=0)
                         ed_arr = []
                         for _, row in stock_with_ma.iterrows():
                             ed_arr.append(EightDiagrams.get_eight_diagrams_score(row, ma_list))
 
-                        new_df[EIGHT_DIAGRAMS_COL] = ed_arr
-                        ind_ed_df[stock_id] = new_df[EIGHT_DIAGRAMS_COL]
-                        valid_stock_count += 1
+                        stock_ed_df[stock_id] = ed_arr
+                        stock_ed_df = stock_ed_df.set_index('date')
 
-                    stocks_with_eight_diagrams_map[ind_id] = new_df
+                        if ind_ed_df.empty or len(ind_ed_df.index) < len(stock_ed_df.index):
+                            ind_ed_df = stock_ed_df.merge(ind_ed_df, how='left', left_index=True, right_index=True)
+                        else:
+                            ind_ed_df = ind_ed_df.merge(stock_ed_df, how='left', left_index=True, right_index=True)
 
-                ret_df = pd.DataFrame()
-                # ret_df['date'] =
-                ret_df[EIGHT_DIAGRAMS_COL] = ind_ed_df.iloc[:, :].sum(axis=1) / valid_stock_count
-                # industry_stocks_with_ma_map[ind_id][stock_id] = stocks_with_eight_diagrams_map[ind_id]
-                industry_stocks_with_ma_map[ind_id] = ret_df
+                        # self.__logger.info(ind_ed_df.to_string())
+
+            if ind_ed_df.empty:
+                self.__logger.warn(f"the index ed df is null for index {ind_id}")
+                continue
+
+            self.__logger.debug(ind_ed_df.to_string())
+
+            ind_ed_score_df = pd.DataFrame()
+            ind_ed_df = ind_ed_df.reset_index('date')
+            ind_ed_score_df['date'] = ind_ed_df['date']
+            ind_ed_df = ind_ed_df.drop('date', axis=1)
+            ind_ed_score_df[EIGHT_DIAGRAMS_COL] = ind_ed_df.apply(lambda row: EightDiagrams.__get_ed_score(row), axis=1).round(2)
+            # ind_ed_score_df = ind_ed_score_df.set_index('date')
+            self.__logger.debug(ind_ed_score_df.to_string())
+            industry_stocks_with_ma_map[ind_id] = ind_ed_score_df
 
         return industry_stocks_with_ma_map
 
     @staticmethod
     def get_eight_diagrams_score(row, ma_list:[]):
-        if row.isnull().values.any():
+        if row.isnull().sum() > 0:
             return -1
         long_ma = row[ma_list[0].name]
         middle_ma = row[ma_list[1].name]
@@ -145,6 +155,13 @@ class EightDiagrams(object):
                     ed_score = 8
 
         return ed_score
+
+    @staticmethod
+    def __get_ed_score(row):
+        count = len(row) - row.isnull().sum()
+        # print(f"row's count: {count}")
+        # print(f"row's sum: {row.sum()}")
+        return row.sum() / count
 
 
 

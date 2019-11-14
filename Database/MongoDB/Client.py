@@ -21,7 +21,7 @@ class Client(object):
 
         # Check database exists
         dblist = self.client.list_database_names()
-        print("db list: " + ', '.join(dblist))
+        self.__logger.debug("db list: " + ', '.join(dblist))
 
     def get_record(self, stock_data_source: StockDataSource, stock_data_type: StockDataType, collection_id: str,
                    record_id: bson.ObjectId):
@@ -105,7 +105,7 @@ class Client(object):
                 rec_df = pd.DataFrame(json_obj)
                 all_df = all_df.append(rec_df, ignore_index=True)
                 # print(all_df.count())
-            self.__logger.info(f"\nget EMPTY record for {stock_id} in source {stock_data_source.name} of dates: {empty_records}")
+            self.__logger.debug(f"\nget EMPTY record for {stock_id} in source {stock_data_source.name} of dates: {empty_records}")
 
             if all_df.empty:
                 return None

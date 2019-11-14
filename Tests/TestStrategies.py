@@ -21,10 +21,11 @@ class TestStrategies(unittest.TestCase):
             start_date="2019-09-09",
             end_date="2019-11-01",
             ma_list=[DF_MA.MACatogary.TWNTY_DAYS, DF_MA.MACatogary.TEN_DAYS, DF_MA.MACatogary.FIVE_DAYS],
+            # industry_ids=["852121"]
             industry_ids=["801770"]
         )
 
-        TestStrategies.__logger.debug(dic)
+        TestStrategies.__logger.info(dic)
 
     def test_eight_diagrams_get_ed_score(self):
         ma_list = [DF_MA.MACatogary.TWNTY_DAYS, DF_MA.MACatogary.TEN_DAYS, DF_MA.MACatogary.FIVE_DAYS]

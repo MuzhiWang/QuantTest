@@ -8,3 +8,4 @@
 - Refactor tests
 - `Add log system`
 - Close open socket
+- Add annotation for func running time

@@ -7,7 +7,7 @@ from Common import FileUtils
 FORMATTER = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 LOG_FILE_NAME = "quant_log.log"
 
-CONSOLE_LEVEL = logging.INFO
+CONSOLE_LEVEL = logging.DEBUG
 FILE_LEVEL = logging.WARNING
 
 class Logger:

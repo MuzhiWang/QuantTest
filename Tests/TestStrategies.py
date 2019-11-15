@@ -32,6 +32,7 @@ class TestStrategies(unittest.TestCase):
         stock_with_ma = self.__stock_controller.get_stock_with_ma(
             "000001", "2019-07-25", "2019-11-01", ma_list)
         # stock_with_ma.to_csv("./stock_with_ma.csv")
+        # stock_with_ma = pd.read_csv("./stock_with_ma.csv")
 
         new_df = stock_with_ma.dropna().iloc[:, 1:].sum(axis=1)
         print(new_df.to_string())

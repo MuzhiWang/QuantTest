@@ -25,9 +25,13 @@ class Logger:
     def __get_file_handler(cls):
         current_file = os.path.abspath(os.path.dirname(__file__))
         log_path = os.path.join(
-            current_file, FileUtils.convert_file_path_based_on_system('..\\..\\Logs\\' + LOG_FILE_NAME))
+            current_file, FileUtils.convert_file_path_based_on_system('..\\..\\Logs\\'))
+        if not os.path.exists(log_path):
+            os.makedirs(log_path)
 
-        file_handler = TimedRotatingFileHandler(log_path, when='midnight')
+        log_file_path = log_path + LOG_FILE_NAME
+
+        file_handler = TimedRotatingFileHandler(log_file_path, when='midnight')
         file_handler.setFormatter(FORMATTER)
         file_handler.setLevel(FILE_LEVEL)
 

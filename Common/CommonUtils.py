@@ -1,6 +1,8 @@
 from Config import Config
 import platform
 import enum
+import pandas as pd
+
 
 def get_os_system() -> Config.OsSystem:
     sys = platform.system()
@@ -13,8 +15,14 @@ def get_os_system() -> Config.OsSystem:
         return Config.OsSystem.WINDOWS
     return Config.OsSystem.UNKNOWN
 
+
+def is_df_none_or_empty(df: pd.DataFrame) -> bool:
+    return df is None or df.empty
+
+
 def sort_enum(enum_list: [], reverse: bool = False):
-    return sorted(enum_list, key=__sort, reverse= reverse)
+    return sorted(enum_list, key=__sort, reverse=reverse)
+
 
 def __sort(en: enum.Enum):
     return en.value

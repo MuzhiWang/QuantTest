@@ -39,24 +39,12 @@ class EightDiagrams(object):
         ma_list = CommonUtils.sort_enum(ma_list)
 
         industry_stocks_with_ma_map = {}
-        industry_eight_diagrams_score = {}
-        stocks_with_ma_map = {}
-        stocks_with_eight_diagrams_map = {}
+        stocks_ed_df_map = {}
         if industry_code is not None:
             industry_name_df = self.__stock_provider.get_industries(industry_code)['name']
             # industry_name_map = {}
             for index, row in industry_name_df.iterrows():
                 industry_ids.append(index)
-
-            # for ind_id, ind_title in industry_name_map.items():
-            #     industry_stocks_with_ma_map[ind_id] = {}
-            #     stock_ids = self.__stock_provider.get_industry_stocks(ind_id)
-            #     self.__logger.debug(f"start to query {len(stock_ids)} stocks of industry: {ind_id} - {ind_title}")
-            #     for s_id in stock_ids:
-            #         stock_id = self.__stock_provider.normalize_stock_id(s_id)
-            #         stock_with_ma = stocks_with_ma_map[stock_id] if stock_id in stocks_with_ma_map else \
-            #             self.__stock_controller.get_stock_with_ma(stock_id, start_date, end_date, ma_list)
-            #         industry_stocks_with_ma_map[ind_id][stock_id] = stock_with_ma
 
         for ind_id in industry_ids:
             # Duplicated ind_id, skip
@@ -70,38 +58,39 @@ class EightDiagrams(object):
             self.__logger.debug(f"start to query {len(stock_ids)} stocks of industry: {ind_id}")
 
             for s_id in stock_ids:
+                # generate eight diagram scores
+                stock_ed_df = pd.DataFrame()
                 stock_id = self.__stock_provider.normalize_stock_id(StockDataSource.JQDATA, s_id)
 
-                if stock_id in stocks_with_ma_map:
-                    # stock_with_ma = stocks_with_ma_map[stock_id]
-                    # ind_ed_df[stock_id] = stocks_with_eight_diagrams_map[stock_id][EIGHT_DIAGRAMS_COL]
-                    raise Exception("Unimplementation")
+                if stock_id in stocks_ed_df_map:
+                    stock_ed_df = stocks_ed_df_map[stock_id]
                 else:
-                    stock_with_ma = \
-                        self.__stock_controller.get_stock_with_ma(stock_id, start_date, end_date, ma_list).dropna()
+                    # stock_with_ma = \
+                    #     self.__stock_controller.get_stock_with_ma(stock_id, start_date, end_date, ma_list).dropna()
+                    stock_with_ma = pd.read_csv("/Users/muzwang/gocode/src/github.com/QuantTest/Tests/stock_with_ma.csv")
 
-                    # generate eight diagram scores
-                    stock_ed_df = pd.DataFrame()
-
-                    if stock_with_ma is None or stock_with_ma.empty:
+                    # if there is no valid stock ma df generated. Ignore the stock and continue
+                    if CommonUtils.is_df_none_or_empty(stock_with_ma):
                         self.__logger.warn(f"get NONE stock with ma for stock {stock_id}")
+                        continue
                     else:
                         stock_ed_df['date'] = stock_with_ma['date']
-                        # new_df['eight_diagrams'] = stock_with_ma.apply(
-                        #     (lambda row: EightDiagrams.get_eight_diagrams_score(row, ma_list)), axis=0)
-                        ed_arr = []
-                        for _, row in stock_with_ma.iterrows():
-                            ed_arr.append(EightDiagrams.get_eight_diagrams_score(row, ma_list))
+                        # ed_arr = []
+                        # for _, row in stock_with_ma.iterrows():
+                        #     ed_arr.append(EightDiagrams.get_eight_diagrams_score(row, ma_list))
 
-                        stock_ed_df[stock_id] = ed_arr
+                        # stock_ed_df[stock_id] = ed_arr
+                        stock_ed_df[stock_id] = stock_with_ma.apply(
+                            (lambda row: EightDiagrams.get_eight_diagrams_score(row, ma_list)), axis=1)
                         stock_ed_df = stock_ed_df.set_index('date')
+                        stocks_ed_df_map[stock_id] = stock_ed_df
 
-                        if ind_ed_df.empty or len(ind_ed_df.index) < len(stock_ed_df.index):
-                            ind_ed_df = stock_ed_df.merge(ind_ed_df, how='left', left_index=True, right_index=True)
-                        else:
-                            ind_ed_df = ind_ed_df.merge(stock_ed_df, how='left', left_index=True, right_index=True)
+                if ind_ed_df.empty or len(ind_ed_df.index) < len(stock_ed_df.index):
+                    ind_ed_df = stock_ed_df.merge(ind_ed_df, how='left', left_index=True, right_index=True)
+                else:
+                    ind_ed_df = ind_ed_df.merge(stock_ed_df, how='left', left_index=True, right_index=True)
 
-                        # self.__logger.info(ind_ed_df.to_string())
+                # self.__logger.info(ind_ed_df.to_string())
 
             if ind_ed_df.empty:
                 self.__logger.warn(f"the index ed df is null for index {ind_id}")
@@ -159,8 +148,6 @@ class EightDiagrams(object):
     @staticmethod
     def __get_ed_score(row):
         count = len(row) - row.isnull().sum()
-        # print(f"row's count: {count}")
-        # print(f"row's sum: {row.sum()}")
         return row.sum() / count
 
 

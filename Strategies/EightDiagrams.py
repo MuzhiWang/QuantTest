@@ -65,9 +65,9 @@ class EightDiagrams(object):
                 if stock_id in stocks_ed_df_map:
                     stock_ed_df = stocks_ed_df_map[stock_id]
                 else:
-                    stock_with_ma = \
-                        self.__stock_controller.get_stock_with_ma(stock_id, start_date, end_date, ma_list).dropna()
-                    # stock_with_ma = pd.read_csv("/Users/muzwang/gocode/src/github.com/QuantTest/Tests/stock_with_ma.csv")
+                    # stock_with_ma = \
+                    #     self.__stock_controller.get_stock_with_ma(stock_id, start_date, end_date, ma_list).dropna()
+                    stock_with_ma = pd.read_csv("/Users/muzwang/gocode/src/github.com/QuantTest/Tests/stock_with_ma.csv").dropna()
 
                     # if there is no valid stock ma df generated. Ignore the stock and continue
                     if CommonUtils.is_df_none_or_empty(stock_with_ma):
@@ -96,7 +96,7 @@ class EightDiagrams(object):
                 self.__logger.warning(f"the index ed df is null for index {ind_id}")
                 continue
 
-            self.__logger.debug(ind_ed_df.to_string())
+            # self.__logger.debug(ind_ed_df.to_string())
 
             ind_ed_score_df = pd.DataFrame()
             ind_ed_df = ind_ed_df.reset_index('date')

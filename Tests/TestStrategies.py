@@ -31,6 +31,7 @@ class TestStrategies(unittest.TestCase):
 
         TestStrategies.__logger.info(dic)
 
+    @running_time
     def test_eight_diagrams_get_ed_score(self):
         ma_list = [DF_MA.MACatogary.TWNTY_DAYS, DF_MA.MACatogary.TEN_DAYS, DF_MA.MACatogary.FIVE_DAYS]
         stock_with_ma = self.__stock_controller.get_stock_with_ma(

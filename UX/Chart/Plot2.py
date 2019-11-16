@@ -38,10 +38,11 @@ def format_date(x, pos=None):
     thisind = np.clip(int(x+0.5), 0, len - 1)
 
     x = dates[thisind]
+    # print(f'x: {x}')
     return datetime.datetime.fromtimestamp(x).strftime('%Y-%m-%d')
 
 fig, ax = plt.subplots()
-# ax.xaxis.set_major_formatter(FuncFormatter(format_date))
+ax.xaxis.set_major_formatter(FuncFormatter(format_date))
 
 
 eight_diagrams = EightDiagrams()
@@ -49,28 +50,18 @@ ed_dict = eight_diagrams.get_industry_stocks_with_eight_diagrams(
             start_date="2019-09-01",
             end_date="2019-11-02",
             ma_list=[DF_MA.MACatogary.TWNTY_DAYS, DF_MA.MACatogary.TEN_DAYS, DF_MA.MACatogary.FIVE_DAYS],
-            # industry_ids=["852121"] # 6 stocks
-            industry_ids=["801770"] # 104 stocks
+            industry_ids=["852121"] # 6 stocks
+            # industry_ids=["801770"] # 104 stocks
             # industry_ids=["801710"] # 67 stocks
             # industry_ids=["801710", "852121", "801770"] # 67 stocks
         )
-ed_df = ed_dict["801770"]
-# dates = pd.to_datetime(ed_df['date'], unit='s').to_numpy()
+ed_df = ed_dict["852121"]
 dates = ed_df['date']
 vals = ed_df['eight_diagrams'].to_numpy()
 
 
 len = len(ed_df.index)
 idx = np.arange(len)
-
-# ax.set_xticks(dates)
-# ax.set_xticklabels(dates);
-#
-# # tick visibility, can be slow for 200,000+ ticks
-# xticklabels = ax.get_xticklabels() # generate list once to speed up function
-# for i, label in enumerate(xticklabels):
-#     if not i%720==0:
-#         label.set_visible(False)
 
 ax.plot(idx, vals, 'o-')
 fig.autofmt_xdate()

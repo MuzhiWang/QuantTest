@@ -61,27 +61,30 @@ class TestClients(unittest.TestCase):
     def test_mongodb_client_get_record_no_record(self):
         start_date = "2019-09-03"
         stock = "000001"
-        res = self.mongodb_client.get_record(StockDataSource.TUSHARE, StockDataType.DAILY, stock,
-                                             str_utils.date_to_object_id(start_date))
+        res = self.mongodb_client.get_record_by_id(StockDataSource.TUSHARE, StockDataType.DAILY, stock,
+                                                   str_utils.date_to_object_id(start_date))
         print(res)
 
-    @unittest.skip
+    # @unittest.skip
     def test_mongodb_client_get_stock_price_df(self):
 
         start_date = "2019-09-02"
-        end_date = "2019-09-03"
+        end_date = "2019-10-03"
         stock = "000001"
-        res = self.mongodb_client.get_stock_price_df(StockDataSource.TUSHARE, StockDataType.DAILY, stock, start_date,
-                                                     end_date)
-        print(res.to_string())
-
-        r1 = self.mongodb_client.get_stock_price_df(StockDataSource.TUSHARE, StockDataType.DAILY, stock, start_date,
-                                                    start_date)
-        r2 = self.mongodb_client.get_stock_price_df(StockDataSource.TUSHARE, StockDataType.DAILY, stock, end_date,
+        # res = self.mongodb_client.get_stock_price_df(StockDataSource.TUSHARE, StockDataType.DAILY, stock, start_date,
+        #                                              end_date)
+        # print(res.to_string())
+        #
+        # r1 = self.mongodb_client.get_stock_price_df(StockDataSource.TUSHARE, StockDataType.DAILY, stock, start_date,
+        #                                             start_date)
+        # r2 = self.mongodb_client.get_stock_price_df(StockDataSource.TUSHARE, StockDataType.DAILY, stock, end_date,
+        #                                             end_date)
+        r3 = self.mongodb_client.get_stock_price_df(StockDataSource.TDX, StockDataType.DAILY, stock, start_date,
                                                     end_date)
         # print(r1.head(10))
         # print(r2.head(10))
         # print(r1.append(r2))
+        print(r3.to_string())
 
     @unittest.skip
     def test_datetime_utils(self):

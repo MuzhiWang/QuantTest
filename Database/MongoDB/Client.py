@@ -23,14 +23,21 @@ class Client(object):
         dblist = self.client.list_database_names()
         self.__logger.debug("db list: " + ', '.join(dblist))
 
-    def get_record(self, stock_data_source: StockDataSource, stock_data_type: StockDataType, collection_id: str,
-                   record_id: bson.ObjectId):
+    def get_record_by_id(self, stock_data_source: StockDataSource, stock_data_type: StockDataType, collection_id: str,
+                         record_id: bson.ObjectId):
         db = self.client[self.__get_db_name(stock_data_source, stock_data_type)]
         if stock_data_type == StockDataType.DAILY:
             records = db[collection_id].find({Constant.ID: record_id})
             for r in records:
                 return r
             return None
+
+    def query_records(self, stock_data_source: StockDataSource, stock_data_type: StockDataType, collection_id: str,
+                         query_dict):
+        db = self.client[self.__get_db_name(stock_data_source, stock_data_type)]
+        if stock_data_type == StockDataType.DAILY:
+            records = db[collection_id].find(query_dict)
+            return records
 
     def upsert_record(
             self, stock_data_source: StockDataSource, stock_data_type: StockDataType, collection_id: str, record: dict,
@@ -52,7 +59,7 @@ class Client(object):
             pass
 
     def get_stored_dates(self, stock_data_source: StockDataSource, stock_data_type: StockDataType, collection_id: str):
-        res = self.get_record(stock_data_source, stock_data_type, collection_id, Constant.STORED_DATES_STATUS_ID)
+        res = self.get_record_by_id(stock_data_source, stock_data_type, collection_id, Constant.STORED_DATES_STATUS_ID)
         if res is None:
             return {}
         return res[Constant.STORED_DATES_MAP]
@@ -91,28 +98,42 @@ class Client(object):
             if end_date is None:
                 end_date = "2019-10-10"
 
-            all_dates = DatetimeUtils.get_interval_dates(start_date, end_date)
+            # all_dates = DatetimeUtils.get_interval_dates(start_date, end_date)
             all_df = pd.DataFrame()
 
-            empty_records = []
-            for date in all_dates:
-                get_rec = self.get_record(stock_data_source, StockDataType.DAILY, stock_id,
-                                          str_utils.date_to_object_id(date))
-                if get_rec is None:
-                    empty_records.append(date)
-                    continue
-                json_obj = json.loads(get_rec[Constant.DATAFRAME])
+            query_dict = {
+                Constant.TRADE_DATE: {
+                    '$lt': DatetimeUtils.convert_date_str_to_int(end_date),
+                    '$gte': DatetimeUtils.convert_date_str_to_int(start_date)
+                }
+            }
+            self.__logger.debug(f'query dict: {query_dict}')
+            records = self.query_records(stock_data_source, StockDataType.DAILY, stock_id, query_dict)
+            for rec in records:
+                json_obj = json.loads(rec[Constant.DATAFRAME])
                 rec_df = pd.DataFrame(json_obj)
                 all_df = all_df.append(rec_df, ignore_index=True)
-                # print(all_df.count())
-            self.__logger.debug(f"\nget EMPTY record for {stock_id} in source {stock_data_source.name} of dates: {empty_records}")
+
+            # Get records one by one
+            # empty_records = []
+            # for date in all_dates:
+            #     get_rec = self.get_record_by_id(stock_data_source, StockDataType.DAILY, stock_id,
+            #                                     str_utils.date_to_object_id(date))
+            #     if get_rec is None:
+            #         empty_records.append(date)
+            #         continue
+            #     json_obj = json.loads(get_rec[Constant.DATAFRAME])
+            #     rec_df = pd.DataFrame(json_obj)
+            #     all_df = all_df.append(rec_df, ignore_index=True)
+            #     # print(all_df.count())
+            # self.__logger.debug(f"\nget EMPTY record for {stock_id} in source {stock_data_source.name} of dates: {empty_records}")
 
             if all_df.empty:
                 return None
 
             rec_sort_df = all_df.sort_values(gw_const.DATE_INDEX[stock_data_source], ascending=True)
 
-            return rec_sort_df.reset_index(drop=True)
+            return rec_sort_df
 
     def upsert_stock_price_df(
             self, stock_data_source: StockDataSource, stock_data_type: StockDataType, stock_id: str, df_data, date):

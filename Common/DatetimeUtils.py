@@ -26,6 +26,7 @@ def get_days_between_dates(start_date: str, end_date: str):
     e_date = get_date(end_date)
     return (e_date - s_date).days
 
+# "2019-10-01" -> 20191001
 def convert_date_str_to_int(date_str: str):
     if not is_date(date_str):
         raise Exception("not date str for converting")

@@ -7,45 +7,31 @@ AxisItem and ViewBox.
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 import numpy as np
-import time
+import datetime
 import random
 import pandas as pd
 from Strategies.EightDiagrams import EightDiagrams
 from Controller.Entities import DF_MA
 
 class DateAxis(pg.AxisItem):
+    def __init__(self, dates, orientation, pen=None, linkView=None, parent=None, maxTickLength=-5, showValues=True):
+        super(DateAxis, self).__init__(orientation, pen, linkView, parent, maxTickLength, showValues)
+        self.dates = dates
+
     def tickStrings(self, values, scale, spacing):
-        # strns = []
-        # rng = max(values)-min(values)
-        # #if rng < 120:
-        # #    return pg.AxisItem.tickStrings(self, values, scale, spacing)
-        # if rng < 3600*24:
-        #     string = '%H:%M:%S'
-        #     label1 = '%b %d -'
-        #     label2 = ' %b %d, %Y'
-        # elif rng >= 3600*24 and rng < 3600*24*30:
-        #     string = '%d'
-        #     label1 = '%b - '
-        #     label2 = '%b, %Y'
-        # elif rng >= 3600*24*30 and rng < 3600*24*30*24:
-        #     string = '%b'
-        #     label1 = '%Y -'
-        #     label2 = ' %Y'
-        # elif rng >=3600*24*30*24:
-        #     string = '%Y'
-        #     label1 = ''
-        #     label2 = ''
-        # for x in values:
-        #     try:
-        #         strns.append(time.strftime(string, time.localtime(x)))
-        #     except ValueError:  ## Windows can't handle dates before 1970
-        #         strns.append('')
-        # try:
-        #     label = time.strftime(label1, time.localtime(min(values)))+time.strftime(label2, time.localtime(max(values)))
-        # except ValueError:
-        #     label = ''
-        # #self.setLabel(text=label)
-        return "t"
+        strns = []
+        length = len(self.dates)
+        for x in values:
+            print(x)
+            # 保证下标不越界,很重要,越界会导致最终plot坐标轴label无显示
+            thisind = np.clip(int(x + 0.5), 0, length - 1)
+            xx = self.dates[thisind]
+            # print(f'x: {x}, xx:{xx}  thisind = {thisind}')
+            try:
+                strns.append(datetime.datetime.fromtimestamp(xx).strftime('%Y-%m-%d %H:%M:00'))
+            except ValueError:  ## Windows can't handle dates before 1970
+                strns.append('')
+        return strns
 
 class CustomViewBox(pg.ViewBox):
     def __init__(self, *args, **kwds):
@@ -68,7 +54,7 @@ app = pg.mkQApp()
 
 eight_diagrams = EightDiagrams()
 ed_dict = eight_diagrams.get_industry_stocks_with_eight_diagrams(
-            start_date="2019-09-27",
+            start_date="2019-07-25",
             end_date="2019-11-02",
             ma_list=[DF_MA.MACatogary.TWNTY_DAYS, DF_MA.MACatogary.TEN_DAYS, DF_MA.MACatogary.FIVE_DAYS],
             industry_ids=["852121"] # 6 stocks
@@ -77,14 +63,18 @@ ed_dict = eight_diagrams.get_industry_stocks_with_eight_diagrams(
             # industry_ids=["801710", "852121", "801770"] # 67 stocks
         )
 ed_df = ed_dict["852121"]
+dates = ed_df['date'].to_numpy()
 
-axis = DateAxis(orientation='bottom')
+axis = DateAxis(orientation='bottom', dates=dates)
 vb = CustomViewBox()
 
 pw = pg.PlotWidget(viewBox=vb, axisItems={'bottom': axis}, enableMenu=False, title="PlotItem with custom axis and ViewBox<br>Menu disabled, mouse behavior changed: left-drag to zoom, right-click to reset zoom")
-dates = pd.to_datetime(ed_df['date'], unit='s').to_numpy()
+length = len(dates)
+dates_idx = np.arange(length)
 vals = ed_df['eight_diagrams'].to_numpy()
-pw.plot(x=dates, y=vals, symbol='o')
+
+# axis.dates = dates
+pw.plot(x=dates_idx, y=vals, symbol='o')
 pw.show()
 pw.setWindowTitle('pyqtgraph example: customPlot')
 

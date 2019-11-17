@@ -42,27 +42,33 @@ def format_date(x, pos=None):
     return datetime.datetime.fromtimestamp(x).strftime('%Y-%m-%d')
 
 fig, ax = plt.subplots()
-ax.xaxis.set_major_formatter(FuncFormatter(format_date))
+# ax.xaxis.set_major_formatter(FuncFormatter(format_date))
 
 
 eight_diagrams = EightDiagrams()
 ed_dict = eight_diagrams.get_industry_stocks_with_eight_diagrams(
-            start_date="2019-09-01",
+            start_date="2019-07-25",
             end_date="2019-11-02",
             ma_list=[DF_MA.MACatogary.TWNTY_DAYS, DF_MA.MACatogary.TEN_DAYS, DF_MA.MACatogary.FIVE_DAYS],
-            industry_ids=["852121"] # 6 stocks
+            # industry_ids=["852121"] # 6 stocks
+            industry_ids=["852121", "801018"] # 6 + 9 stocks
+            # industry_ids=["801018"] # 9 stocks
             # industry_ids=["801770"] # 104 stocks
             # industry_ids=["801710"] # 67 stocks
             # industry_ids=["801710", "852121", "801770"] # 67 stocks
         )
-ed_df = ed_dict["852121"]
-dates = ed_df['date']
-vals = ed_df['eight_diagrams'].to_numpy()
+
+# idx = 0
+markers = ['o-', 'r+']
+for key, df_val in ed_dict.items():
+    dates = df_val['date']
+    vals = df_val['eight_diagrams'].to_numpy()
 
 
-len = len(ed_df.index)
-idx = np.arange(len)
+    length = len(df_val.index)
+    idx = np.arange(length)
 
-ax.plot(idx, vals, 'o-')
+    ax.plot(idx, vals, 'o-')
+    # idx += 1
 fig.autofmt_xdate()
 plt.show()

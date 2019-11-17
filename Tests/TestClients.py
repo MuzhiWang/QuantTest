@@ -113,7 +113,7 @@ class TestClients(unittest.TestCase):
 
     # @unittest.skip
     def test_jqdata_client_get_industries(self):
-        res = self.jqdate_client.get_industries(cfg.IndustryCode.sw_l1)
+        res = self.jqdate_client.get_industries(cfg.IndustryCode.sw_l2)
         print(res['name'])
 
         for index, row in res.iterrows():

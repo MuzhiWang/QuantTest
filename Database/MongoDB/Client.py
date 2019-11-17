@@ -107,7 +107,7 @@ class Client(object):
                     '$gte': DatetimeUtils.convert_date_str_to_int(start_date)
                 }
             }
-            self.__logger.debug(f'query dict: {query_dict}')
+            self.__logger.debug(f'query stock {stock_id} dict: {query_dict}')
             records = self.query_records(stock_data_source, StockDataType.DAILY, stock_id, query_dict)
             for rec in records:
                 json_obj = json.loads(rec[Constant.DATAFRAME])

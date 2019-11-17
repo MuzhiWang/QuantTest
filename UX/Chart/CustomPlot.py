@@ -50,6 +50,17 @@ class CustomViewBox(pg.ViewBox):
             pg.ViewBox.mouseDragEvent(self, ev)
 
 
+click_idx = 0
+symbols = ['o', 's', 't', 'd', '+']
+def clicked1(curve, points):
+    global click_idx
+    print(curve)
+    curve.setSymbol(symbols[click_idx % len(symbols)])
+    click_idx += 1
+    print(points)
+
+
+
 app = pg.mkQApp()
 
 eight_diagrams = EightDiagrams()
@@ -74,7 +85,8 @@ dates_idx = np.arange(length)
 vals = ed_df['eight_diagrams'].to_numpy()
 
 # axis.dates = dates
-pw.plot(x=dates_idx, y=vals, symbol='o')
+curve1 =pw.plot(x=dates_idx, y=vals, symbol='o')
+curve1.sigPointsClicked.connect(clicked1)
 pw.show()
 pw.setWindowTitle('pyqtgraph example: customPlot')
 

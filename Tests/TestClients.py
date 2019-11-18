@@ -156,6 +156,11 @@ class TestClients(unittest.TestCase):
         df = self.tdx_client.get_realtime_stock_1min_bars("002807")
         self.logger.debug(df.to_string())
 
+    @unittest.skip
+    def test_tdx_client_get_realtime_stocks_quotas(self):
+        res = self.tdx_client.get_realtime_stocks_quotes(["000001", '000002'])
+        print(res)
+
     # @unittest.skip
     def test_file_utils(self):
         path = self.cfg_provider.get_tdx_directory_path('sh')

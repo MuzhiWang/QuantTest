@@ -2,6 +2,7 @@ from pytdx.reader import lc_min_bar_reader
 from pytdx.hq import TdxHq_API, TDXParams
 import time
 import pandas as pd
+from Common.CommonUtils import *
 
 class TDX_GW(object):
 
@@ -30,6 +31,13 @@ class TDX_GW(object):
             df = self.__tdx_api.to_df(
                 self.__tdx_api.get_security_bars(8, 0, stock_id, 0, 10))  # 返回DataFrame
             return df
+
+    def get_realtime_stocks_quotes(self, stock_ids: []):
+        stock_list = []
+        for id in stock_ids:
+            stock_list.append((get_stock_market(id), id))
+        with self.__tdx_api.connect(self.__connected_ip, self.__connected_port):
+            return self.__tdx_api.get_security_quotes(stock_list)
 
     def test(self):
         with self.__tdx_api.connect(self.__connected_ip, self.__connected_port):

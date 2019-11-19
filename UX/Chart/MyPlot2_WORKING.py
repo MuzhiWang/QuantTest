@@ -71,6 +71,7 @@ class MyCheckbox(QCheckBox):
         super().__init__(label)
         self.__label = label
         self.__canvas = canvas
+        self.setChecked(True)
         self.stateChanged.connect(self.check_clicked)
 
     def check_clicked(self, state):

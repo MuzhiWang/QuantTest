@@ -1,22 +1,17 @@
 import sys
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets, QtCore
 
-class StrategyWindow(object):
+class StrategyWindow(QtWidgets.QMainWindow):
 
-    def window(self):
-        app = QtGui.QGuiApplication(sys.argv)
-        widget = QtWidgets.QWidget()
-        label = QtWidgets.QLabel(widget)
+    def __init__(self, strategy_name: str):
+        QtWidgets.QMainWindow.__init__(self)
 
-        label.setText("Test label...")
-        widget.setGeometry(100, 100, 200, 50)
-        label.move(50, 20)
-        widget.setWindowTitle("This widget")
-        widget.show()
-
-        sys.exit(app.exec_())
+        self.setMinimumSize(QtCore.QSize(1280, 960))
+        self.setWindowTitle(f"{strategy_name} Strategy Window")
 
 
 if __name__ == '__main__':
-    s_win = StrategyWindow()
-    s_win.window()
+    app = QtWidgets.QApplication(sys.argv)
+    s_win = StrategyWindow("Eight Diagram")
+    s_win.show()
+    sys.exit(app.exec_())

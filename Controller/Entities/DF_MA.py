@@ -1,5 +1,6 @@
 import pandas as pd
 import enum
+from Config.StockConfig import StockDataType
 
 
 class DF_MA(object):
@@ -32,6 +33,7 @@ class MACatogary(enum.Enum):
     FIVE_DAYS = 6
 
 class Constant:
+    # total minutes for MA days
     ma_category_mins_map = {
         MACatogary.UNDEFINED: -1,
         MACatogary.THIRTY_DAYS: 7200,
@@ -40,4 +42,10 @@ class Constant:
         MACatogary.TEN_DAYS: 2400,
         MACatogary.EIGHT_DAYS: 1920,
         MACatogary.FIVE_DAYS: 1200
+    }
+
+    ma_category_rolling_window_min_count_map = {
+        StockDataType.FIVE_MINS: 5,
+        StockDataType.ONE_MIN: 1,
+        StockDataType.DAILY: 240
     }

@@ -7,6 +7,7 @@ import pandas as pd
 from .ConfigProvider import ConfigProvider
 import re
 import Gateway.Config as cfg
+from Common.Exception import UnimplementedException
 
 
 class StockProvider(object):
@@ -67,10 +68,11 @@ class StockProvider(object):
             self.__get_local_files_and_store_stock(data_source, stock_data_type,
                                                    FileUtils.convert_file_path_based_on_system(path), force_upsert)
 
-    def get_stock_1min_df(self, data_source: StockConfig.StockDataSource, stock_id: str,
-                          start_date: str, end_date: str):
+    def get_stock_df(self, data_source: StockConfig.StockDataSource,
+                     stock_data_type: StockConfig.StockDataType, stock_id: str, start_date: str,
+                     end_date: str):
         if data_source == StockConfig.StockDataSource.TDX:
-            df = self.__mongodb_client.get_stock_price_df(data_source, StockConfig.StockDataType.DAILY,
+            df = self.__mongodb_client.get_stock_price_df(data_source, stock_data_type,
                                                           stock_id, start_date, end_date)
             return df
         else:

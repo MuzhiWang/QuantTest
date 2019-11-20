@@ -1,6 +1,6 @@
 from __future__ import division
 from Core.Provider import StockProvider
-from Config.StockConfig import StockDataSource
+from Config.StockConfig import StockDataSource, StockDataType
 import pandas as pd
 from Controller.Entities import DF_MA
 import Gateway.Config as cfg
@@ -28,7 +28,7 @@ class EightDiagrams(object):
         self.__stock_provider = StockProvider.StockProvider()
         self.__logger = Logger.get_logger(__name__)
 
-    def get_industry_stocks_with_eight_diagrams(self, start_date: str, end_date: str, ma_list: [],
+    def get_industry_stocks_with_eight_diagrams(self, stock_date_type: StockDataType, start_date: str, end_date: str, ma_list: [],
                                                 industry_code: cfg.IndustryCode = None, industry_ids: [] = None):
         if industry_ids is None and industry_code is None:
             raise Exception("industry code or id must exist one")
@@ -66,7 +66,8 @@ class EightDiagrams(object):
                     stock_ed_df = stocks_ed_df_map[stock_id]
                 else:
                     stock_with_ma = \
-                        self.__stock_controller.get_stock_with_ma(stock_id, start_date, end_date, ma_list).dropna()
+                        self.__stock_controller.get_stock_with_ma(stock_date_type, stock_id, start_date, end_date,
+                                                                  ma_list).dropna()
                     # stock_with_ma = pd.read_csv("/Users/muzwang/gocode/src/github.com/QuantTest/Tests/stock_with_ma.csv").dropna()
 
                     # if there is no valid stock ma df generated. Ignore the stock and continue

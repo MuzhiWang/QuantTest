@@ -9,6 +9,7 @@ import pandas as pd
 from Common import DatetimeUtils
 from Gateway.Config import Constant as gw_const
 from Common.Log.Logger import Logger
+from Common.Exception import UnimplementedException
 
 
 class Client(object):
@@ -47,9 +48,13 @@ class Client(object):
     def query_stock_records(self, stock_data_source: StockDataSource, stock_data_type: StockDataType, collection_id: str,
                             query_dict: {}):
         db = self.client[self.__get_db_name(stock_data_source, stock_data_type)]
-        if stock_data_type == StockDataType.DAILY:
+        if stock_data_type == StockDataType.DAILY or \
+                stock_data_type == StockDataType.FIVE_MINS or \
+                stock_data_type == StockDataType.ONE_MIN:
             records = db[collection_id].find(query_dict)
             return records
+        else:
+            raise UnimplementedException
 
     def upsert_record(
             self, stock_data_source: StockDataSource, stock_data_type: StockDataType, collection_id: str, record: dict,
@@ -104,12 +109,12 @@ class Client(object):
     def get_stock_price_df(
             self, stock_data_source: StockDataSource, stock_data_type: StockDataType,
             stock_id: str, start_date: str = None, end_date: str = None):
-        if stock_data_type == StockDataType.DAILY:
-            if start_date is None:
-                start_date = "2019-01-01"
-            if end_date is None:
-                end_date = "2019-10-10"
+        if start_date is None or end_date is None:
+            raise Exception('start date and end date must exist in getting stock price df')
 
+        if stock_data_type == StockDataType.DAILY or \
+                stock_data_type == StockDataType.FIVE_MINS or \
+                stock_data_type == StockDataType.ONE_MIN:
             # all_dates = DatetimeUtils.get_interval_dates(start_date, end_date)
             all_df = pd.DataFrame()
 
@@ -120,7 +125,11 @@ class Client(object):
                 }
             }
             self.__logger.debug(f'query stock {stock_id} dict: {query_dict}')
-            records = self.query_stock_records(stock_data_source, StockDataType.DAILY, stock_id, query_dict)
+            records = self.query_stock_records(stock_data_source, stock_data_type, stock_id, query_dict)
+
+            if records is None:
+                return None
+
             for rec in records:
                 json_obj = json.loads(rec[Constant.DATAFRAME])
                 rec_df = pd.DataFrame(json_obj)
@@ -146,6 +155,8 @@ class Client(object):
             rec_sort_df = all_df.sort_values(gw_const.DATE_INDEX[stock_data_source], ascending=True)
 
             return rec_sort_df
+        else:
+            raise Exception('unimplemented')
 
     def upsert_stock_price_df(
             self, stock_data_source: StockDataSource, stock_data_type: StockDataType, stock_id: str, df_data, date=None):

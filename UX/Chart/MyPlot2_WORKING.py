@@ -1,26 +1,42 @@
 import sys
 import random
 import matplotlib
+from matplotlib.ticker import FuncFormatter
+
+from Controller.Entities import DF_MA
+from Strategies.EightDiagrams import EightDiagrams
+
 matplotlib.use("Qt5Agg")
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QVBoxLayout, QHBoxLayout, QSizePolicy, QMessageBox, QWidget, QCheckBox
 from numpy import arange, sin, pi
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+import numpy as np
+import datetime
+from Config.StockConfig import StockDataType
 
 
 class MyMplCanvas(FigureCanvas):
+
+    __init_dates = None
+    __idx_length = None
+
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
     def __init__(self, parent=None, width=5, height=4, dpi=100, df_map={}):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
-        self.test_plot = None
-        # We want the axes cleared every time plot() is called
-        # self.axes.hold(False)
+        self.plot_map = {}
+        # annot = self.axes.annotate("", xy=(0, 0), xytext=(20, 20), textcoords="offset points",
+        #                     bbox=dict(boxstyle="round", fc="w"),
+        #                     arrowprops=dict(arrowstyle="->"))
+        # annot.set_visible(False)
+        # self.annotaion = annot
+        #
+        # fig.canvas.mpl_connect("motion_notify_event", )
 
         self.compute_initial_figure(df_map)
 
-        #
         FigureCanvas.__init__(self, fig)
         self.setParent(parent)
 
@@ -30,21 +46,42 @@ class MyMplCanvas(FigureCanvas):
         FigureCanvas.updateGeometry(self)
 
     def compute_initial_figure(self, df_map: {}):
-        pass
+        idx = None
+        for key, df in df_map.items():
+            # initial index and date xaxis
+            if idx is None:
+                MyMplCanvas.__idx_length = len(df.index)
+                idx = np.arange(MyMplCanvas.__idx_length)
+                MyMplCanvas.__init_dates = df['date']
+            vals = df['eight_diagrams'].to_numpy()
+            p = self.axes.plot(idx, vals)
+            self.plot_map[key] = p
 
-    def display_test_plot(self, display: bool):
-        for line in self.test_plot:
+        self.axes.xaxis.set_major_formatter(FuncFormatter(MyMplCanvas.format_date))
+
+    def display_plot(self, plot_id: str, display: bool):
+        for line in self.plot_map[plot_id]:
             line.set_visible(display)
         self.draw()
+
+    @staticmethod
+    def format_date(x, pos=None):
+        # 保证下标不越界,很重要,越界会导致最终plot坐标轴label无显示
+        thisind = np.clip(int(x + 0.5), 0, MyMplCanvas.__idx_length - 1)
+
+        x = MyMplCanvas.__init_dates[thisind]
+        # print(f'x: {x}')
+        return datetime.datetime.fromtimestamp(x).strftime('%Y-%m-%d')
 
 
 class MyStaticMplCanvas(MyMplCanvas):
     """Simple canvas with a sine plot."""
-    def compute_initial_figure(self, df_map: {}):
-        t = arange(0.0, 3.0, 0.01)
-        s = sin(2*pi*t)
-        p = self.axes.plot(t, s)
-        self.test_plot = p
+    # def compute_initial_figure(self, df_map: {}):
+    #     t = arange(0.0, 3.0, 0.01)
+    #     s = sin(2*pi*t)
+    #     p = self.axes.plot(t, s)
+    #     self.test_plot = p
+    pass
 
 
 class MyDynamicMplCanvas(MyMplCanvas):
@@ -76,19 +113,19 @@ class MyCheckbox(QCheckBox):
 
     def check_clicked(self, state):
         if state == QtCore.Qt.Checked:
-            self.__canvas.display_test_plot(True)
+            self.__canvas.display_plot(self.__label, True)
             # for line in self.__canvas.test_plot:
             #     print(f"test plot line: {line}")
             #     line.set_visible(True)
             print(f"{self.text()} is checked")
         else:
-            self.__canvas.display_test_plot(False)
+            self.__canvas.display_plot(self.__label, False)
             # for line in self.__canvas.test_plot:
             #     line.set_visible(False)
             print(f"{self.text()} unchecked")
 
 class ApplicationWindow(QMainWindow):
-    def __init__(self, df_map: {}):
+    def __init__(self):
         QMainWindow.__init__(self)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setWindowTitle("Strategy main window")
@@ -109,15 +146,24 @@ class ApplicationWindow(QMainWindow):
         main_layout = QHBoxLayout(self.main_widget)
         plot_layout = QHBoxLayout()
         label_layout = QVBoxLayout()
-        main_layout.addLayout(plot_layout, stretch=1)
+        main_layout.addLayout(plot_layout, stretch=4)
         main_layout.addLayout(label_layout, stretch=1)
 
-        sc = MyStaticMplCanvas(self.main_widget, width=5, height=4, dpi=100, df_map=df_map)
-        dc = MyDynamicMplCanvas(self.main_widget, width=5, height=4, dpi=100, df_map=df_map)
-        plot_layout.addWidget(sc)
-        plot_layout.addWidget(dc)
+        eight_diagrams = EightDiagrams()
+        ed_dict = eight_diagrams.get_industry_stocks_with_eight_diagrams(StockDataType.FIVE_MINS,
+                                                                         start_date="2019-07-25", end_date="2019-11-02",
+                                                                         ma_list=[DF_MA.MACatogary.TWNTY_DAYS,
+                                                                                  DF_MA.MACatogary.TEN_DAYS,
+                                                                                  DF_MA.MACatogary.FIVE_DAYS],
+                                                                         # industry_ids=["852121", "801018"])
+                                                                         industry_ids=["801111", "801203", "801051"]) # 47 + 50 + 33
 
-        for key, df in df_map.items():
+        sc = MyStaticMplCanvas(self.main_widget, width=5, height=4, dpi=100, df_map=ed_dict)
+        # dc = MyDynamicMplCanvas(self.main_widget, width=5, height=4, dpi=100, df_map=df_map)
+        plot_layout.addWidget(sc)
+        # plot_layout.addWidget(dc)
+
+        for key, df in ed_dict.items():
             cb = MyCheckbox(key, sc)
             label_layout.addWidget(cb)
 
@@ -137,9 +183,21 @@ class ApplicationWindow(QMainWindow):
         """test test test strategy with matplotlib in Pyqt5"""
   )
 
+StyleSheet = '''
+QCheckBox {
+    spacing: 5px;
+    font-size:25px;     /* <--- */
+}
+
+QCheckBox::indicator {
+    width:  33px;
+    height: 33px;
+}
+'''
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-
-    aw = ApplicationWindow({'000001':1, '000002':2})
+    app.setStyleSheet(StyleSheet)
+    aw = ApplicationWindow()
     aw.show()
     sys.exit(app.exec_())

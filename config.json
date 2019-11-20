@@ -2,12 +2,12 @@
   "paths": {
     "tdx_directory_path": {
       "DAILY": {
-        "sh": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sh\\minline",
-        "sz": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sz\\minline"
-      },
-      "FIVE_MINS": {
         "sh": "",
         "sz": ""
+      },
+      "FIVE_MINS": {
+        "sh": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sh\\fzline",
+        "sz": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sz\\fzline"
       },
       "ONE_MIN": {
         "sh": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sh\\minline",

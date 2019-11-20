@@ -8,6 +8,7 @@ from Common.Log.Logger import Logger
 from Common.RunningTimeDecorator import running_time
 
 from Controller.StockController import StockController
+from Config.StockConfig import StockDataType
 
 
 class TestStrategies(unittest.TestCase):
@@ -19,23 +20,20 @@ class TestStrategies(unittest.TestCase):
     # @unittest.skip
     @running_time
     def test_eight_diagrams_get_industry_stocks_with_ma(self):
-        dic = self.__strategy.get_industry_stocks_with_eight_diagrams(
-            start_date="2019-09-27",
-            end_date="2019-11-02",
-            ma_list=[DF_MA.MACatogary.TWNTY_DAYS, DF_MA.MACatogary.TEN_DAYS, DF_MA.MACatogary.FIVE_DAYS],
-            industry_ids=["852121"] # 6 stocks
-            # industry_ids=["801770"] # 104 stocks
-            # industry_ids=["801710"] # 67 stocks
-            # industry_ids=["801710", "852121", "801770"] # 177 stocks
-        )
+        dic = self.__strategy.get_industry_stocks_with_eight_diagrams(StockDataType.ONE_MIN,
+                                                                      start_date="2019-09-27", end_date="2019-11-02",
+                                                                      ma_list=[DF_MA.MACatogary.TWNTY_DAYS,
+                                                                               DF_MA.MACatogary.TEN_DAYS,
+                                                                               DF_MA.MACatogary.FIVE_DAYS],
+                                                                      industry_ids=["852121"])
 
         TestStrategies.__logger.info(dic)
 
     @running_time
     def test_eight_diagrams_get_ed_score(self):
         ma_list = [DF_MA.MACatogary.TWNTY_DAYS, DF_MA.MACatogary.TEN_DAYS, DF_MA.MACatogary.FIVE_DAYS]
-        stock_with_ma = self.__stock_controller.get_stock_with_ma(
-            "000001", "2019-07-25", "2019-11-01", ma_list)
+        stock_with_ma = self.__stock_controller.get_stock_with_ma(StockDataType.ONE_MIN, "000001", "2019-07-25",
+                                                                  "2019-11-01", ma_list)
         # stock_with_ma.to_csv("./stock_with_ma.csv")
         # stock_with_ma = pd.read_csv("./stock_with_ma.csv")
 

@@ -52,8 +52,8 @@ class TestProvider(unittest.TestCase):
 
     @unittest.skip
     def test_provider_get_1min_stock(self):
-        df = self.provider.get_stock_1min_df(
-            StockConfig.StockDataSource.TDX, "000001", "2019-07-23", "2019-11-01")
+        df = self.provider.get_stock_df(StockConfig.StockDataSource.TDX, StockConfig.StockDataType.ONE_MIN, "000001",
+                                        "2019-07-23", "2019-11-01")
         df['date'] = pd.to_datetime(df['date'])
         df['date'] = [int(t.value / (10 ** 9)) for t in df.date]
         df = df[['date', 'close']]

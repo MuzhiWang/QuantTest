@@ -12,6 +12,7 @@ import random
 import pandas as pd
 from Strategies.EightDiagrams import EightDiagrams
 from Controller.Entities import DF_MA
+from Config.StockConfig import StockDataType
 
 class DateAxis(pg.AxisItem):
     def __init__(self, dates, orientation, pen=None, linkView=None, parent=None, maxTickLength=-5, showValues=True):
@@ -64,15 +65,12 @@ def clicked1(curve, points):
 app = pg.mkQApp()
 
 eight_diagrams = EightDiagrams()
-ed_dict = eight_diagrams.get_industry_stocks_with_eight_diagrams(
-            start_date="2019-07-25",
-            end_date="2019-11-02",
-            ma_list=[DF_MA.MACatogary.TWNTY_DAYS, DF_MA.MACatogary.TEN_DAYS, DF_MA.MACatogary.FIVE_DAYS],
-            industry_ids=["852121"] # 6 stocks
-            # industry_ids=["801770"] # 104 stocks
-            # industry_ids=["801710"] # 67 stocks
-            # industry_ids=["801710", "852121", "801770"] # 67 stocks
-        )
+ed_dict = eight_diagrams.get_industry_stocks_with_eight_diagrams(StockDataType.ONE_MIN,
+                                                                 start_date="2019-07-25", end_date="2019-11-02",
+                                                                 ma_list=[DF_MA.MACatogary.TWNTY_DAYS,
+                                                                          DF_MA.MACatogary.TEN_DAYS,
+                                                                          DF_MA.MACatogary.FIVE_DAYS],
+                                                                 industry_ids=["852121"])
 ed_df = ed_dict["852121"]
 dates = ed_df['date'].to_numpy()
 

@@ -39,7 +39,7 @@ class TestClients(unittest.TestCase):
         print(ttt)
 
         for stock in StockCode.Test:
-            df = self.tushare_client.get_1min_stock_price(stock, start_date, end_date)
+            df = self.tushare_client.get_stock_price(StockDataType.DAILY, stock, start_date, end_date)
             # df = pd.read_csv(csv_path)
             print(df.head(10))
             # df.to_csv(csv_path, index=False)
@@ -61,8 +61,8 @@ class TestClients(unittest.TestCase):
     def test_mongodb_client_get_record_no_record(self):
         start_date = "2019-09-03"
         stock = "000001"
-        res = self.mongodb_client.get_record_by_id(StockDataSource.TUSHARE, StockDataType.DAILY, stock,
-                                                   str_utils.date_to_object_id(start_date))
+        res = self.mongodb_client.get_stock_record_by_id(StockDataSource.TUSHARE, StockDataType.DAILY, stock,
+                                                         str_utils.date_to_object_id(start_date))
         print(res)
 
     # @unittest.skip
@@ -134,11 +134,11 @@ class TestClients(unittest.TestCase):
         res = self.jqdate_client.normalize_stock_id("000019.XSHE")
         print(res)
 
-    @unittest.skip
+    # @unittest.skip
     def test_tushare_client(self):
-        df = self.tushare_client.get_1min_stock_price("000001", "2019-09-02", "2019-09-05")
+        df = self.tushare_client.get_stock_price(StockDataType.ONE_HOUR, "000001", "2019-09-02", "2019-09-05")
         print(df)
-        df.to_csv(FileUtils.convert_file_path_based_on_system("./CSV/tushare001.csv"))
+        # df.to_csv(FileUtils.convert_file_path_based_on_system("./CSV/tushare001.csv"))
 
     @unittest.skip
     def test_tdx_client_get_local_1min_bars(self):
@@ -163,7 +163,8 @@ class TestClients(unittest.TestCase):
 
     # @unittest.skip
     def test_file_utils(self):
-        path = self.cfg_provider.get_tdx_directory_path('sh')
+        path = self.cfg_provider.get_tdx_directory_path(StockDataType.DAILY, 'sh')
+        print(path)
         path = FileUtils.convert_file_path_based_on_system(path)
         self.logger.debug(FileUtils.get_all_files(path))
 

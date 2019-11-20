@@ -1,8 +1,18 @@
 {
   "paths": {
     "tdx_directory_path": {
-      "sh": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sh\\minline",
-      "sz": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sz\\minline"
+      "DAILY": {
+        "sh": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sh\\minline",
+        "sz": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sz\\minline"
+      },
+      "FIVE_MINS": {
+        "sh": "",
+        "sz": ""
+      },
+      "ONE_MIN": {
+        "sh": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sh\\minline",
+        "sz": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sz\\minline"
+      }
     }
   }
 }

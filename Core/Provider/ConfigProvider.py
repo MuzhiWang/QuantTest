@@ -2,6 +2,7 @@ import configparser
 import os
 import json
 from Common import FileUtils
+from Config.StockConfig import StockDataType
 
 class ConfigProvider(object):
 
@@ -22,8 +23,8 @@ class ConfigProvider(object):
     def get_config(self):
         return self.__config
 
-    def get_tdx_directory_path(self, subpath = None):
-        path = self.get_config()['paths']['tdx_directory_path']
+    def get_tdx_directory_path(self, stock_data_type: StockDataType, subpath=None):
+        path = self.get_config()['paths']['tdx_directory_path'][stock_data_type.name]
         return path if subpath is None else path[subpath]
 
 

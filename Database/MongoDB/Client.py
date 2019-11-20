@@ -23,17 +23,29 @@ class Client(object):
         dblist = self.client.list_database_names()
         self.__logger.debug("db list: " + ', '.join(dblist))
 
-    def get_record_by_id(self, stock_data_source: StockDataSource, stock_data_type: StockDataType, collection_id: str,
-                         record_id: bson.ObjectId):
+    def get_stock_record_by_id(self, stock_data_source: StockDataSource, stock_data_type: StockDataType, collection_id: str,
+                               record_id: bson.ObjectId):
         db = self.client[self.__get_db_name(stock_data_source, stock_data_type)]
-        if stock_data_type == StockDataType.DAILY:
-            records = db[collection_id].find({Constant.ID: record_id})
-            for r in records:
-                return r
-            return None
+        # if stock_data_type == StockDataType.DAILY:
+        records = db[collection_id].find({Constant.ID: record_id})
+        for r in records:
+            return r
+        return None
 
-    def query_records(self, stock_data_source: StockDataSource, stock_data_type: StockDataType, collection_id: str,
-                         query_dict):
+    def get_record_by_id(self, database_name: str, collection_id: str,
+                         record_id: bson.ObjectId):
+        db = self.client[database_name]
+        records = db[collection_id].find({Constant.ID: record_id})
+        for r in records:
+            return r
+
+    def query_records(self, database_name: str, collection_id: str,
+                         query_dict: {}):
+        db = self.client[database_name]
+        return db[collection_id].find(query_dict)
+
+    def query_stock_records(self, stock_data_source: StockDataSource, stock_data_type: StockDataType, collection_id: str,
+                            query_dict: {}):
         db = self.client[self.__get_db_name(stock_data_source, stock_data_type)]
         if stock_data_type == StockDataType.DAILY:
             records = db[collection_id].find(query_dict)
@@ -47,19 +59,19 @@ class Client(object):
         if record_id is None:
             record_id = bson.ObjectId()
 
-        if stock_data_type == StockDataType.DAILY:
+        if stock_data_type == StockDataType.DAILY or \
+            stock_data_type == StockDataType.FIVE_MINS or \
+                stock_data_type == StockDataType.ONE_MIN:
             cur_collection = db[collection_id]
             myquery = {Constant.ID: record_id}
             newvalues = {"$set": record}
 
             cur_collection.update_one(myquery, newvalues, upsert=True)
-        elif stock_data_type == StockDataType.FIVE_MINS:
-            pass
-        elif stock_data_type == StockDataType.ONE_MIN:
-            pass
+        else:
+            raise Exception("unimplemented")
 
     def get_stored_dates(self, stock_data_source: StockDataSource, stock_data_type: StockDataType, collection_id: str):
-        res = self.get_record_by_id(stock_data_source, stock_data_type, collection_id, Constant.STORED_DATES_STATUS_ID)
+        res = self.get_stock_record_by_id(stock_data_source, stock_data_type, collection_id, Constant.STORED_DATES_STATUS_ID)
         if res is None:
             return {}
         return res[Constant.STORED_DATES_MAP]
@@ -108,7 +120,7 @@ class Client(object):
                 }
             }
             self.__logger.debug(f'query stock {stock_id} dict: {query_dict}')
-            records = self.query_records(stock_data_source, StockDataType.DAILY, stock_id, query_dict)
+            records = self.query_stock_records(stock_data_source, StockDataType.DAILY, stock_id, query_dict)
             for rec in records:
                 json_obj = json.loads(rec[Constant.DATAFRAME])
                 rec_df = pd.DataFrame(json_obj)
@@ -136,7 +148,7 @@ class Client(object):
             return rec_sort_df
 
     def upsert_stock_price_df(
-            self, stock_data_source: StockDataSource, stock_data_type: StockDataType, stock_id: str, df_data, date):
+            self, stock_data_source: StockDataSource, stock_data_type: StockDataType, stock_id: str, df_data, date=None):
         db = self.client[self.__get_db_name(stock_data_source, stock_data_type)]
         if stock_data_type == StockDataType.DAILY:
             if date is None:
@@ -152,10 +164,21 @@ class Client(object):
             newvalues = {"$set": dicts}
 
             cur_collection.update_one(myquery, newvalues, upsert=True)
-        elif stock_data_type == StockDataType.FIVE_MINS:
-            pass
-        elif stock_data_type == StockDataType.ONE_MIN:
-            pass
+        elif stock_data_type == StockDataType.FIVE_MINS or \
+                stock_data_type == StockDataType.ONE_MIN:
+            if date is None:
+                raise Exception("no date for daily stock price insert")
+            cur_collection = db[stock_id]
+            dicts = {
+                Constant.ID: str_utils.date_to_object_id(date),
+                Constant.TRADE_DATE: DatetimeUtils.convert_date_str_to_int(date),
+                Constant.DATAFRAME: json.dumps(df_data.to_dict())
+            }
+
+            myquery = {Constant.ID: str_utils.date_to_object_id(date)}
+            newvalues = {"$set": dicts}
+
+            cur_collection.update_one(myquery, newvalues, upsert=True)
 
     def __get_db_name(self, stock_data_source: StockDataSource, stock_data_type: StockDataType):
         return f"{stock_data_source.name}_{stock_data_type.name}"

@@ -22,16 +22,17 @@ class TestProvider(unittest.TestCase):
     # @unittest.skip
     def test_provider_tushare(self):
         start = time.time()
-        self.provider.query_and_store_1min_stock(StockConfig.StockDataSource.TUSHARE, "000001", "2019-04-02",
-                                                 "2019-07-05")
+        self.provider.query_and_store_stock(StockConfig.StockDataSource.TUSHARE, StockConfig.StockDataType.ONE_MIN,
+                                                 "000002", "2019-04-02", "2019-07-05", force_upsert=True)
         print(f"test_provider spend time: {(time.time() - start) * 1000} ms")
 
 
     @unittest.skip
     def test_provider_tdx(self):
         start = time.time()
-        df = self.provider.query_and_store_1min_stock(StockConfig.StockDataSource.JQDATA, "000001", "2019-04-02",
-                                                 "2019-07-05")
+        df = self.provider.query_and_store_stock(StockConfig.StockDataSource.JQDATA,
+                                                 StockConfig.StockDataType.DAILY, "000001", "2019-04-02",
+                                                      "2019-07-05")
         print(f"test_provider spend time: {(time.time() - start) * 1000} ms")
         print(df.to_string())
 
@@ -41,12 +42,12 @@ class TestProvider(unittest.TestCase):
         parent_of_parent_dir = os.path.join(current_file, FileUtils.convert_file_path_based_on_system('../'))
         print(parent_of_parent_dir)
 
-        print(self.cfg_provider.get_tdx_directory_path('sz'))
+        print(self.cfg_provider.get_tdx_directory_path(StockConfig.StockDataType.DAILY, 'sz'))
 
     @unittest.skip
     def test_provider_tdx_store_local(self):
         start = time.time()
-        self.provider.get_and_store_local_1min_stock(StockConfig.StockDataSource.TDX)
+        self.provider.get_and_store_local_stock(StockConfig.StockDataSource.TDX, StockConfig.StockDataType.DAILY)
         print(f"test_provider tdx store local spend time: {(time.time() - start) * 1000} ms")
 
     @unittest.skip

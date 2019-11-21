@@ -16,3 +16,14 @@ class Constant:
         StockDataSource.JQDATA: "date",
         StockDataSource.TDX: "date"
     }
+
+    TDX_BLOCK_CODE_LIST = 'code_list'
+    TDX_BLOCK_NAME = 'blockname'
+
+class TDX_BLOCK_NAME:
+    HUSHENG_300 = '沪深300'
+    ZHONGZHENG_100 = '中证100'
+    ZHONGZHENG_200 = '中证200'
+    CHUANGYEBANZHI = '创业板指'
+    ZHONGZHENGHONGLI = '中证红利'
+

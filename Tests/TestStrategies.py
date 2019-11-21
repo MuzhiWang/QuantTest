@@ -9,6 +9,7 @@ from Common.RunningTimeDecorator import running_time
 
 from Controller.StockController import StockController
 from Config.StockConfig import StockDataType
+from Gateway.Config import TDX_BLOCK_NAME
 
 
 class TestStrategies(unittest.TestCase):
@@ -26,6 +27,17 @@ class TestStrategies(unittest.TestCase):
                                                                                DF_MA.MACatogary.TEN_DAYS,
                                                                                DF_MA.MACatogary.FIVE_DAYS],
                                                                       industry_ids=["852121"])
+
+        TestStrategies.__logger.info(dic)\
+
+    @running_time
+    def test_eight_diagrams_get_block_stocks_with_ma(self):
+        dic = self.__strategy.get_block_stocks_with_eight_diagrams(StockDataType.FIVE_MINS,
+                                                                      start_date="2019-07-27", end_date="2019-11-07",
+                                                                      ma_list=[DF_MA.MACatogary.TWNTY_DAYS,
+                                                                               DF_MA.MACatogary.TEN_DAYS,
+                                                                               DF_MA.MACatogary.FIVE_DAYS],
+                                                                      block_names=[TDX_BLOCK_NAME.ZHONGZHENG_100])
 
         TestStrategies.__logger.info(dic)
 
@@ -50,6 +62,8 @@ class TestStrategies(unittest.TestCase):
         res['eight_diagrams'] = ed_arr
 
         print(res.to_string())
+
+
 
 if __name__ == '__main__':
     unittest.main()

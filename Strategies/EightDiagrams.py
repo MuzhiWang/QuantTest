@@ -8,6 +8,9 @@ from Controller import StockController
 from Common.Log.Logger import Logger
 from Common import CommonUtils
 
+import threading
+import time
+
 EIGHT_DIAGRAMS_COL = 'eight_diagrams'
 
 class EightDiagrams(object):
@@ -51,47 +54,13 @@ class EightDiagrams(object):
             if ind_id in industry_stocks_with_ma_map:
                 pass
 
-            ind_ed_df = pd.DataFrame()
 
             industry_stocks_with_ma_map[ind_id] = {}
             stock_ids = self.__stock_provider.get_industry_stocks(ind_id)
             self.__logger.debug(f"start to query {len(stock_ids)} stocks of industry: {ind_id}")
 
-            for s_id in stock_ids:
-                # generate eight diagram scores
-                stock_ed_df = pd.DataFrame()
-                stock_id = self.__stock_provider.normalize_stock_id(StockDataSource.JQDATA, s_id)
-
-                if stock_id in stocks_ed_df_map:
-                    stock_ed_df = stocks_ed_df_map[stock_id]
-                else:
-                    stock_with_ma = \
-                        self.__stock_controller.get_stock_with_ma(stock_date_type, stock_id, start_date, end_date,
-                                                                  ma_list).dropna()
-                    # stock_with_ma = pd.read_csv("/Users/muzwang/gocode/src/github.com/QuantTest/Tests/stock_with_ma.csv").dropna()
-
-                    # if there is no valid stock ma df generated. Ignore the stock and continue
-                    if CommonUtils.is_df_none_or_empty(stock_with_ma):
-                        self.__logger.warning(f"get NONE stock with ma for stock {stock_id}")
-                        continue
-                    else:
-                        stock_ed_df['date'] = stock_with_ma['date']
-                        # ed_arr = []
-                        # for _, row in stock_with_ma.iterrows():
-                        #     ed_arr.append(EightDiagrams.get_eight_diagrams_score(row, ma_list))
-
-                        # stock_ed_df[stock_id] = ed_arr
-                        stock_ed_df[stock_id] = stock_with_ma.apply(
-                            (lambda row: EightDiagrams.get_eight_diagrams_score(row, ma_list)), axis=1)
-                        stock_ed_df = stock_ed_df.set_index('date')
-                        stocks_ed_df_map[stock_id] = stock_ed_df
-
-                if ind_ed_df.empty or len(ind_ed_df.index) < len(stock_ed_df.index):
-                    ind_ed_df = stock_ed_df.merge(ind_ed_df, how='left', left_index=True, right_index=True)
-                else:
-                    ind_ed_df = ind_ed_df.merge(stock_ed_df, how='left', left_index=True, right_index=True)
-
-                # self.__logger.debug(ind_ed_df.to_string())
+            ind_ed_df = self.__get_batch_stocks_ed_df(
+                stock_ids, stocks_ed_df_map, stock_date_type, start_date, end_date, ma_list)
 
             if ind_ed_df.empty:
                 self.__logger.warning(f"the index ed df is null for index {ind_id}")
@@ -109,6 +78,49 @@ class EightDiagrams(object):
             industry_stocks_with_ma_map[ind_id] = ind_ed_score_df
 
         return industry_stocks_with_ma_map
+
+
+    def get_block_stocks_with_eight_diagrams(self, stock_date_type: StockDataType, start_date: str, end_date: str, ma_list: [],
+                                                block_names: []):
+        if block_names is None or len(block_names) == 0:
+            raise Exception("block must exist")
+
+        if len(ma_list) != 3:
+            raise Exception("ma list must contains 3 ma categories")
+
+        ma_list = CommonUtils.sort_enum(ma_list)
+
+        block_stocks_with_ma_map = {}
+        stocks_ed_df_map = {}
+
+        for block_name in block_names:
+            # Duplicated ind_id, skip
+            if block_name in block_stocks_with_ma_map:
+                pass
+
+            block_stocks_with_ma_map[block_name] = {}
+            stock_ids = self.__stock_provider.get_block_stocks(StockDataSource.TDX, block_name)
+            self.__logger.debug(f"start to query {len(stock_ids)} stocks of block: {block_name}")
+
+            block_ed_df = self.__get_batch_stocks_ed_df(
+                stock_ids, stocks_ed_df_map, stock_date_type, start_date, end_date, ma_list)
+
+            if block_ed_df.empty:
+                self.__logger.warning(f"the index ed df is null for index {block_name}")
+                continue
+
+            # self.__logger.debug(ind_ed_df.to_string())
+
+            ind_ed_score_df = pd.DataFrame()
+            block_ed_df = block_ed_df.reset_index('date')
+            ind_ed_score_df['date'] = block_ed_df['date']
+            block_ed_df = block_ed_df.drop('date', axis=1)
+            ind_ed_score_df[EIGHT_DIAGRAMS_COL] = block_ed_df.apply(lambda row: EightDiagrams.__get_ed_score(row), axis=1).round(2)
+            # ind_ed_score_df = ind_ed_score_df.set_index('date')
+            self.__logger.debug(ind_ed_score_df.to_string())
+            block_stocks_with_ma_map[block_name] = ind_ed_score_df
+
+        return block_stocks_with_ma_map
 
     @staticmethod
     def get_eight_diagrams_score(row, ma_list:[]):
@@ -150,6 +162,71 @@ class EightDiagrams(object):
     def __get_ed_score(row):
         count = len(row) - row.isnull().sum()
         return row.sum() / count
+
+    def __get_batch_stocks_ed_df(self, stock_ids: [], stocks_ed_df_map: {},
+                                 stock_date_type: StockDataType, start_date: str, end_date: str, ma_list: []):
+        batch_stocks_ed_df1 = pd.DataFrame()
+        batch_stocks_ed_df2 = pd.DataFrame()
+
+        pivot = int(len(stock_ids)/2)
+        t1 = threading.Thread(target=self.__get_limited_batch_stocks_ed_df, args=(stock_ids[:pivot], stocks_ed_df_map, stock_date_type,
+                                                                       start_date, end_date, ma_list, batch_stocks_ed_df1,))
+        print(f'thread 1 ')
+        t2 = threading.Thread(target=self.__get_limited_batch_stocks_ed_df, args=(stock_ids[pivot:], stocks_ed_df_map, stock_date_type,
+                                                                       start_date, end_date, ma_list, batch_stocks_ed_df2,))
+        print(f'thread 2 ')
+
+        t1.start()
+        t2.start()
+
+        t1.join()
+        t2.join()
+
+        print(f'multiple threads done!')
+
+        return batch_stocks_ed_df1.merge(batch_stocks_ed_df2, how='left', left_index=True, right_index=True)
+
+
+    def __get_limited_batch_stocks_ed_df(self, stock_ids: [], stocks_ed_df_map: {},
+                       stock_date_type: StockDataType, start_date: str, end_date: str, ma_list: [], batch_stocks_ed_df: pd.DataFrame):
+        # batch_stocks_ed_df = pd.DataFrame()
+        for s_id in stock_ids:
+            # generate eight diagram scores
+            stock_ed_df = pd.DataFrame()
+            stock_id = self.__stock_provider.normalize_stock_id(StockDataSource.JQDATA, s_id)
+
+            if stock_id in stocks_ed_df_map:
+                stock_ed_df = stocks_ed_df_map[stock_id]
+            else:
+                stock_with_ma = \
+                    self.__stock_controller.get_stock_with_ma(stock_date_type, stock_id, start_date, end_date,
+                                                              ma_list).dropna()
+                # stock_with_ma = pd.read_csv("/Users/muzwang/gocode/src/github.com/QuantTest/Tests/stock_with_ma.csv").dropna()
+
+                # if there is no valid stock ma df generated. Ignore the stock and continue
+                if CommonUtils.is_df_none_or_empty(stock_with_ma):
+                    self.__logger.warning(f"get NONE stock with ma for stock {stock_id}")
+                    continue
+                else:
+                    stock_ed_df['date'] = stock_with_ma['date']
+                    # ed_arr = []
+                    # for _, row in stock_with_ma.iterrows():
+                    #     ed_arr.append(EightDiagrams.get_eight_diagrams_score(row, ma_list))
+
+                    # stock_ed_df[stock_id] = ed_arr
+                    stock_ed_df[stock_id] = stock_with_ma.apply(
+                        (lambda row: EightDiagrams.get_eight_diagrams_score(row, ma_list)), axis=1)
+                    stock_ed_df = stock_ed_df.set_index('date')
+                    stocks_ed_df_map[stock_id] = stock_ed_df
+
+            if batch_stocks_ed_df.empty or len(batch_stocks_ed_df.index) < len(stock_ed_df.index):
+                batch_stocks_ed_df = stock_ed_df.merge(batch_stocks_ed_df, how='left', left_index=True, right_index=True)
+            else:
+                batch_stocks_ed_df = batch_stocks_ed_df.merge(stock_ed_df, how='left', left_index=True, right_index=True)
+
+            # self.__logger.debug(ind_ed_df.to_string())
+
+        return batch_stocks_ed_df
 
 
 

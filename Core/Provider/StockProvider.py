@@ -1,7 +1,7 @@
 from Gateway import TuShare, JQData, Tdx
 from Gateway import Config as gw_cfg
 from Database.MongoDB import Client
-from Common import DatetimeUtils, StringUtils, FileUtils
+from Common import DatetimeUtils, StringUtils, FileUtils, CommonUtils
 from Config import StockConfig
 import pandas as pd
 from .ConfigProvider import ConfigProvider
@@ -62,7 +62,7 @@ class StockProvider(object):
 
         if stock_id is not None:
             raise Exception("unimplemented")
-        tdx_dir = self.__config_provider.get_tdx_directory_path(stock_data_type)
+        tdx_dir = self.__config_provider.get_tdx_stock_directory_path(stock_data_type)
         for exchange, path in tdx_dir.items():
             print(f"start to get and store local 1min stock data for exchange {exchange} ...")
             self.__get_local_files_and_store_stock(data_source, stock_data_type,
@@ -77,6 +77,17 @@ class StockProvider(object):
             return df
         else:
             raise Exception("unimplemented get stock 1 min df for other data source except for TDX")
+
+    def get_block_stocks(self, data_source: StockConfig.StockDataSource, block_name: str):
+        if data_source == StockConfig.StockDataSource.TDX:
+            block_df = self.__tdx_gw.get_local_block()
+            if CommonUtils.is_df_none_or_empty(block_df):
+                raise Exception('get empty block df')
+
+            block_df = block_df.set_index(cfg.Constant.TDX_BLOCK_NAME)
+            return block_df.loc[block_name][cfg.Constant.TDX_BLOCK_CODE_LIST].strip().split(',')
+        else:
+            raise UnimplementedException
 
     def get_industries(self, industry_code: cfg.IndustryCode):
         return self.__jqdata_gw.get_industries(name=industry_code.name)
@@ -104,7 +115,7 @@ class StockProvider(object):
         for file in all_files:
             stock_name = self.normalize_stock_id(data_source, file.split(".")[0])
             file_path = FileUtils.convert_file_path_based_on_system(f"{dir_path}/{file}")
-            df = self.__tdx_gw.get_local_1min_bars(file_path)
+            df = self.__tdx_gw.get_local_stock_bars(file_path)
             self.__store_stock_df_data(data_source, stock_data_type, df, stock_name,
                                        force_upsert)
 

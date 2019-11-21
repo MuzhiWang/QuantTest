@@ -1,8 +1,10 @@
-from pytdx.reader import lc_min_bar_reader
+from pytdx.reader import lc_min_bar_reader, block_reader
+from pytdx.reader.block_reader import BlockReader_TYPE_GROUP
 from pytdx.hq import TdxHq_API, TDXParams
 import time
 import pandas as pd
 from Common.CommonUtils import *
+from Core.Provider import ConfigProvider
 
 class TDX_GW(object):
 
@@ -13,11 +15,13 @@ class TDX_GW(object):
 
     def __init__(self):
         self.__lc_min_bar_reader = lc_min_bar_reader.TdxLCMinBarReader()
+        self.__block_reader = block_reader.BlockReader()
         self.__tdx_api = TdxHq_API()
+        self.__cfg_provider = ConfigProvider.ConfigProvider()
 
 
-    def get_local_1min_bars(self, file_path: str):
-        start = time.time()
+    def get_local_stock_bars(self, file_path: str):
+        # start = time.time()
         # df = self.__lc_min_bar_reader.get_df(file_path)
         data = self.__lc_min_bar_reader.parse_data_by_file(file_path)
         df = pd.DataFrame(data=data)
@@ -25,6 +29,10 @@ class TDX_GW(object):
         # print(f"TDX get 1min bar time spent: {(time.time() - start) * 1000} ms")
 
         return df[['date', 'open', 'high', 'low', 'close', 'amount', 'volume']]
+
+    def get_local_block(self):
+        file_path = self.__cfg_provider.get_tdx_block_directory_path()
+        return self.__block_reader.get_df(file_path, BlockReader_TYPE_GROUP)
 
     def get_realtime_stock_1min_bars(self, stock_id: str):
         with self.__tdx_api.connect(self.__connected_ip, self.__connected_port):

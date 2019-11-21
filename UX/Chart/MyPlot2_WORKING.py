@@ -15,6 +15,7 @@ from matplotlib.figure import Figure
 import numpy as np
 import datetime
 from Config.StockConfig import StockDataType
+from Gateway.Config import TDX_BLOCK_NAME
 
 
 class MyMplCanvas(FigureCanvas):
@@ -150,13 +151,20 @@ class ApplicationWindow(QMainWindow):
         main_layout.addLayout(label_layout, stretch=1)
 
         eight_diagrams = EightDiagrams()
-        ed_dict = eight_diagrams.get_industry_stocks_with_eight_diagrams(StockDataType.FIVE_MINS,
+        # ed_dict = eight_diagrams.get_industry_stocks_with_eight_diagrams(StockDataType.FIVE_MINS,
+        #                                                                  start_date="2019-07-25", end_date="2019-11-02",
+        #                                                                  ma_list=[DF_MA.MACatogary.TWNTY_DAYS,
+        #                                                                           DF_MA.MACatogary.TEN_DAYS,
+        #                                                                           DF_MA.MACatogary.FIVE_DAYS],
+        #                                                                  # industry_ids=["852121", "801018"])
+        #                                                                  industry_ids=["801111", "801203", "801051"]) # 47 + 50 + 33
+        ed_dict = eight_diagrams.get_block_stocks_with_eight_diagrams(StockDataType.FIVE_MINS,
                                                                          start_date="2019-07-25", end_date="2019-11-02",
                                                                          ma_list=[DF_MA.MACatogary.TWNTY_DAYS,
                                                                                   DF_MA.MACatogary.TEN_DAYS,
                                                                                   DF_MA.MACatogary.FIVE_DAYS],
                                                                          # industry_ids=["852121", "801018"])
-                                                                         industry_ids=["801111", "801203", "801051"]) # 47 + 50 + 33
+                                                                         block_names=[TDX_BLOCK_NAME.ZHONGZHENG_100, TDX_BLOCK_NAME.CHUANGYEBANZHI])  # 47 + 50 + 33
 
         sc = MyStaticMplCanvas(self.main_widget, width=5, height=4, dpi=100, df_map=ed_dict)
         # dc = MyDynamicMplCanvas(self.main_widget, width=5, height=4, dpi=100, df_map=df_map)

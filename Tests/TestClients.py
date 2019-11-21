@@ -13,6 +13,7 @@ import re
 import time
 import Gateway.Config as cfg
 from Common.Log.Logger import Logger
+from Common.RunningTimeDecorator import running_time
 
 
 class TestClients(unittest.TestCase):
@@ -142,7 +143,7 @@ class TestClients(unittest.TestCase):
 
     @unittest.skip
     def test_tdx_client_get_local_1min_bars(self):
-        df = self.tdx_client.get_local_1min_bars(
+        df = self.tdx_client.get_local_stock_bars(
             FileUtils.convert_file_path_based_on_system(".\\LC1\\SZ\\sz000001.lc1"))
         print(df)
         df.to_csv(FileUtils.convert_file_path_based_on_system(".\\CSV\\tdx001.csv"))
@@ -151,10 +152,16 @@ class TestClients(unittest.TestCase):
         df['date_index'] = pd.to_datetime(df['date']).dt.strftime(DatetimeUtils.DATE_FORMAT)
         print(df)
 
+    def test_tdx_client_get_local_block(self):
+        df = self.tdx_client.get_local_block()
+        df = df.set_index('blockname')
+        print(df.loc[cfg.TDX_BLOCK_NAME.HUSHENG_300][cfg.Constant.TDX_BLOCK_CODE_LIST].strip().split(','))
+
     # @unittest.skip
     def test_tdx_client_get_realtime_stock(self):
         df = self.tdx_client.get_realtime_stock_1min_bars("002807")
         self.logger.debug(df.to_string())
+
 
     @unittest.skip
     def test_tdx_client_get_realtime_stocks_quotas(self):
@@ -163,7 +170,7 @@ class TestClients(unittest.TestCase):
 
     # @unittest.skip
     def test_file_utils(self):
-        path = self.cfg_provider.get_tdx_directory_path(StockDataType.DAILY, 'sh')
+        path = self.cfg_provider.get_tdx_stock_directory_path(StockDataType.DAILY, 'sh')
         print(path)
         path = FileUtils.convert_file_path_based_on_system(path)
         self.logger.debug(FileUtils.get_all_files(path))

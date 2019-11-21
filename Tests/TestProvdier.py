@@ -6,6 +6,8 @@ import os
 from Common import FileUtils
 import pandas as pd
 import matplotlib.pyplot as plt
+from Gateway.Config import TDX_BLOCK_NAME
+from Common.RunningTimeDecorator import running_time
 
 
 class TestProvider(unittest.TestCase):
@@ -42,7 +44,7 @@ class TestProvider(unittest.TestCase):
         parent_of_parent_dir = os.path.join(current_file, FileUtils.convert_file_path_based_on_system('../'))
         print(parent_of_parent_dir)
 
-        print(self.cfg_provider.get_tdx_directory_path(StockConfig.StockDataType.DAILY, 'sz'))
+        print(self.cfg_provider.get_tdx_stock_directory_path(StockConfig.StockDataType.DAILY, 'sz'))
 
     @unittest.skip
     def test_provider_tdx_store_local(self):
@@ -76,6 +78,11 @@ class TestProvider(unittest.TestCase):
     # @unittest.skip
     def test_normalize_stock_id(self):
         res = self.provider.normalize_stock_id(StockConfig.StockDataSource.JQDATA, "000019.XSHE")
+        print(res)
+
+    @running_time
+    def test_get_block_stocks(self):
+        res = self.provider.get_block_stocks(StockConfig.StockDataSource.TDX, TDX_BLOCK_NAME.ZHONGZHENG_200)
         print(res)
 
 

@@ -26,6 +26,7 @@ class StockProvider(object):
         self.__tdx_gw = Tdx.TDX_GW()
         self.__config_provider = ConfigProvider()
 
+    # query online stock data and store it in DB
     def query_and_store_stock(self, data_source: StockConfig.StockDataSource,
                               stock_data_type: StockConfig.StockDataType, stock_id: str,
                               start_date: str, end_date: str, force_upsert=False):
@@ -54,6 +55,7 @@ class StockProvider(object):
         self.__store_stock_df_data(data_source, stock_data_type, df, stock_id, force_upsert)
         return df
 
+    # read local stock file and store it in DB
     def get_and_store_local_stock(self, data_source: StockConfig.StockDataSource,
                                   stock_data_type: StockConfig.StockDataType,
                                   stock_id: str = None, force_upsert=False):
@@ -97,13 +99,16 @@ class StockProvider(object):
 
     def normalize_stock_id(
             self, stock_data_source: StockConfig.StockDataSource, stock_id: str):
-        if stock_data_source == StockConfig.StockDataSource.JQDATA:
+        if stock_data_source == StockConfig.StockDataSource.JQDATA or \
+                stock_data_source == StockConfig.StockDataSource.TDX:
             return self.__jqdata_gw.normalize_stock_id(stock_id)
         elif stock_data_source == StockConfig.StockDataSource.TUSHARE:
-            raise Exception("unimplemented")
+            raise UnimplementedException
         # Tdx code like 'sz000001', 'sh600001'
-        elif stock_data_source == StockConfig.StockDataSource.TDX:
-            return re.sub('[a-zA-Z]', '', stock_id)
+        # elif stock_data_source == StockConfig.StockDataSource.TDX:
+        #     return re.sub('[a-zA-Z]', '', stock_id)
+        else:
+            raise UnimplementedException
 
     def __get_local_files_and_store_stock(self, data_source: StockConfig.StockDataSource,
                                           stock_data_type: StockConfig.StockDataType,

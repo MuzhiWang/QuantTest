@@ -110,7 +110,7 @@ class EightDiagrams(object):
             stock_ids = EightDiagrams.stock_provider.get_block_stocks(StockDataSource.TDX, block_name)
             EightDiagrams.logger.debug(f"start to query {len(stock_ids)} stocks of block: {block_name}")
 
-            block_ed_df = EightDiagrams.__get_batch_stocks_ed_df(
+            block_ed_df = self.__get_batch_stocks_ed_df(
                 stock_ids, stocks_ed_df_map, stock_date_type, start_date, end_date, ma_list)
 
             if block_ed_df.empty:

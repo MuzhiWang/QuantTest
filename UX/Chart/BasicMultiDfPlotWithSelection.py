@@ -1,10 +1,8 @@
-import sys
 import random
 import matplotlib
 from matplotlib.ticker import FuncFormatter
 
-from Controller.Entities import DF_MA
-from Strategies.EightDiagrams import EightDiagrams
+from Common.Exception.UnimplementedException import UnimplementedException
 
 matplotlib.use("Qt5Agg")
 from PyQt5 import QtCore
@@ -14,8 +12,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import numpy as np
 import datetime
-from Config.StockConfig import StockDataType
-from Gateway.Config import TDX_BLOCK_NAME
+
 
 
 class MyMplCanvas(FigureCanvas):
@@ -24,10 +21,12 @@ class MyMplCanvas(FigureCanvas):
     __idx_length = None
 
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
-    def __init__(self, parent=None, width=5, height=4, dpi=100, df_map={}):
+    def __init__(self, parent=None, width=5, height=4, dpi=100, df_map={}, x_asix='date', y_asix='close'):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         self.plot_map = {}
+        self.x_asix = x_asix
+        self.y_asix = y_asix
         # annot = self.axes.annotate("", xy=(0, 0), xytext=(20, 20), textcoords="offset points",
         #                     bbox=dict(boxstyle="round", fc="w"),
         #                     arrowprops=dict(arrowstyle="->"))
@@ -53,8 +52,8 @@ class MyMplCanvas(FigureCanvas):
             if idx is None:
                 MyMplCanvas.__idx_length = len(df.index)
                 idx = np.arange(MyMplCanvas.__idx_length)
-                MyMplCanvas.__init_dates = df['date']
-            vals = df['eight_diagrams'].to_numpy()
+                MyMplCanvas.__init_dates = df[self.x_asix]
+            vals = df[self.y_asix].to_numpy()
             p = self.axes.plot(idx, vals)
             self.plot_map[key] = p
 
@@ -71,9 +70,13 @@ class MyMplCanvas(FigureCanvas):
         thisind = np.clip(int(x + 0.5), 0, MyMplCanvas.__idx_length - 1)
 
         x = MyMplCanvas.__init_dates[thisind]
-        # print(f'x: {x}')
-        return datetime.datetime.fromtimestamp(x).strftime('%Y-%m-%d')
 
+        if isinstance(x, str):
+            return x
+        elif isinstance(x, int):
+            return datetime.datetime.fromtimestamp(x).strftime('%Y-%m-%d')
+        else:
+            raise UnimplementedException
 
 class MyStaticMplCanvas(MyMplCanvas):
     """Simple canvas with a sine plot."""
@@ -126,10 +129,12 @@ class MyCheckbox(QCheckBox):
             print(f"{self.text()} unchecked")
 
 class ApplicationWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, df_dict: {}, x_asix='date', y_asix='close'):
         QMainWindow.__init__(self)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.setWindowTitle("Strategy main window")
+        self.setWindowTitle("main window")
+        self.setStyleSheet(StyleSheet)
+        self.setMinimumSize(QtCore.QSize(1280, 960))
 
         self.file_menu = QMenu('&File', self)
         self.file_menu.addAction('&Quit', self.fileQuit,
@@ -150,28 +155,13 @@ class ApplicationWindow(QMainWindow):
         main_layout.addLayout(plot_layout, stretch=4)
         main_layout.addLayout(label_layout, stretch=1)
 
-        eight_diagrams = EightDiagrams()
-        # ed_dict = eight_diagrams.get_industry_stocks_with_eight_diagrams(StockDataType.FIVE_MINS,
-        #                                                                  start_date="2019-07-25", end_date="2019-11-02",
-        #                                                                  ma_list=[DF_MA.MACatogary.TWNTY_DAYS,
-        #                                                                           DF_MA.MACatogary.TEN_DAYS,
-        #                                                                           DF_MA.MACatogary.FIVE_DAYS],
-        #                                                                  # industry_ids=["852121", "801018"])
-        #                                                                  industry_ids=["801111", "801203", "801051"]) # 47 + 50 + 33
-        ed_dict = eight_diagrams.get_block_stocks_with_eight_diagrams(StockDataType.FIVE_MINS,
-                                                                         start_date="2019-07-25", end_date="2019-11-02",
-                                                                         ma_list=[DF_MA.MACatogary.TWNTY_DAYS,
-                                                                                  DF_MA.MACatogary.TEN_DAYS,
-                                                                                  DF_MA.MACatogary.FIVE_DAYS],
-                                                                         # industry_ids=["852121", "801018"])
-                                                                         block_names=[TDX_BLOCK_NAME.ZHONGZHENG_100, TDX_BLOCK_NAME.CHUANGYEBANZHI])  # 47 + 50 + 33
 
-        sc = MyStaticMplCanvas(self.main_widget, width=5, height=4, dpi=100, df_map=ed_dict)
+        sc = MyStaticMplCanvas(self.main_widget, width=5, height=4, dpi=100, df_map=df_dict, x_asix=x_asix, y_asix=y_asix)
         # dc = MyDynamicMplCanvas(self.main_widget, width=5, height=4, dpi=100, df_map=df_map)
         plot_layout.addWidget(sc)
         # plot_layout.addWidget(dc)
 
-        for key, df in ed_dict.items():
+        for key, df in df_dict.items():
             cb = MyCheckbox(key, sc)
             label_layout.addWidget(cb)
 
@@ -202,10 +192,3 @@ QCheckBox::indicator {
     height: 33px;
 }
 '''
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    app.setStyleSheet(StyleSheet)
-    aw = ApplicationWindow()
-    aw.show()
-    sys.exit(app.exec_())

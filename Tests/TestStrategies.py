@@ -37,7 +37,7 @@ class TestStrategies(unittest.TestCase):
                                                                       ma_list=[DF_MA.MACatogary.TWNTY_DAYS,
                                                                                DF_MA.MACatogary.TEN_DAYS,
                                                                                DF_MA.MACatogary.FIVE_DAYS],
-                                                                      block_names=[TDX_BLOCK_NAME.ZHONGZHENG_100])
+                                                                      block_names=[TDX_BLOCK_NAME.ZHONGZHENG_100, TDX_BLOCK_NAME.HUSHENG_300])
 
         TestStrategies.__logger.info(dic)
 

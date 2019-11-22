@@ -79,6 +79,7 @@ class TestProvider(unittest.TestCase):
     def test_normalize_stock_id(self):
         res = self.provider.normalize_stock_id(StockConfig.StockDataSource.JQDATA, "000019.XSHE")
         print(res)
+        print(self.provider.normalize_stock_id(StockConfig.StockDataSource.TDX, "sz000001"))
 
     @running_time
     def test_get_block_stocks(self):

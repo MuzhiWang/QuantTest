@@ -1,5 +1,6 @@
 import jqdatasdk as jq
 import jqdatasdk.utils as jq_utils
+import jqdatasdk.api as jq_api
 from Common import DatetimeUtils, StringUtils
 import Gateway.Config as cfg
 
@@ -37,8 +38,15 @@ class JQData_GW(object):
     def get_trade_days(self, start_date: str, end_date: str = None):
         return jq.get_trade_days(start_date=start_date, end_date = end_date)
 
+    # "000001.XSHE" -> "000001"
     def normalize_stock_id(self, stock_id: str):
         return jq_utils.normal_security_code(stock_id)
+
+    # code could be index or stock id
+    # ['000001', 'SZ000001', '000001SZ', '000001.sz', '000001.XSHE'] -> "000001.XSHE"
+    def normalize_code(self, code: str):
+        return jq_api.normalize_code(code)
+
 
 # gw = JQData_GW()
 # gw.test()

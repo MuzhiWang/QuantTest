@@ -71,9 +71,10 @@ class MyMplCanvas(FigureCanvas):
 
         x = MyMplCanvas.__init_dates[thisind]
 
+        # print(type(x))
         if isinstance(x, str):
             return x
-        elif isinstance(x, int):
+        elif isinstance(x, np.int64) or isinstance(x, float) or isinstance(x, int):
             return datetime.datetime.fromtimestamp(x).strftime('%Y-%m-%d')
         else:
             raise UnimplementedException

@@ -27,3 +27,18 @@ class TDX_BLOCK_NAME:
     CHUANGYEBANZHI = '创业板指'
     ZHONGZHENGHONGLI = '中证红利'
 
+
+'''
+交易市场	            代码后缀	示例代码	    证券简称
+上海证券交易所	        .XSHG	    '600519.XSHG'	贵州茅台
+深圳证券交易所	        .XSHE	    '000001.XSHE'	平安银行
+中金所	                .CCFX	    'IC9999.CCFX'	中证500主力合约
+大商所	                .XDCE	    'A9999.XDCE'	豆一主力合约
+上期所	                .XSGE	    'AU9999.XSGE'	黄金主力合约
+郑商所	                .XZCE	    'CY8888.XZCE'	棉纱期货指数
+上海国际能源期货交易所	.XINE	    'SC9999.XINE'	原油主力合约
+'''
+class JQDATA_SUFFIX:
+    SH = 'XSHG'
+    SZ = 'XSHE'
+

@@ -135,6 +135,9 @@ class TestClients(unittest.TestCase):
         res = self.jqdate_client.normalize_stock_id("000019.XSHE")
         print(res)
 
+    def test_jqdata_client_normalize_code(self):
+        print(self.jqdate_client.normalize_code("sz000001"))
+
     # @unittest.skip
     def test_tushare_client(self):
         df = self.tushare_client.get_stock_price(StockDataType.ONE_HOUR, "000001", "2019-09-02", "2019-09-05")

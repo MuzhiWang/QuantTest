@@ -134,6 +134,7 @@ class TestClients(unittest.TestCase):
     def test_jqdata_client_normalize_stock_id(self):
         res = self.jqdate_client.normalize_stock_id("000019.XSHE")
         print(res)
+        print(self.jqdate_client.normalize_stock_id("000001.XSHG"))
 
     def test_jqdata_client_normalize_code(self):
         print(self.jqdate_client.normalize_code("sz000001"))
@@ -173,10 +174,32 @@ class TestClients(unittest.TestCase):
 
     # @unittest.skip
     def test_file_utils(self):
-        path = self.cfg_provider.get_tdx_stock_directory_path(StockDataType.DAILY, 'sh')
+        path = self.cfg_provider.get_tdx_stock_directory_path(StockDataType.ONE_MIN, 'sh')
         print(path)
         path = FileUtils.convert_file_path_based_on_system(path)
         self.logger.debug(FileUtils.get_all_files(path))
+
+    def test_file_utils_get_same_code_files(self):
+        path = self.cfg_provider.get_tdx_stock_directory_path(StockDataType.ONE_MIN, 'sh')
+        print(path)
+        path1 = FileUtils.convert_file_path_based_on_system(path)
+        sh_files = FileUtils.get_all_files(path1)
+        path = self.cfg_provider.get_tdx_stock_directory_path(StockDataType.ONE_MIN, 'sz')
+        path2 = FileUtils.convert_file_path_based_on_system(path)
+        sz_files = FileUtils.get_all_files(path2)
+
+        sh_file_codes = {}
+        sz_file_codes = {}
+        for f in sh_files:
+            f_code = f.split(".lc1")[0].split("sh")[1]
+            sh_file_codes[f_code] = True
+        for f in sz_files:
+            f_code = f.split(".lc1")[0].split("sz")[1]
+            sz_file_codes[f_code] = True
+
+        for key, _ in sh_file_codes.items():
+            if key in sz_file_codes:
+                print(f'both exist: {key}')
 
     @unittest.skip
     def test_common_utils(self):

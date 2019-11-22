@@ -42,3 +42,18 @@ class JQDATA_SUFFIX:
     SH = 'XSHG'
     SZ = 'XSHE'
 
+
+'''
+both exist: 000001
+both exist: 000002
+both exist: 000009
+both exist: 000010
+both exist: 000016
+both exist: 000017
+both exist: 000019
+both exist: 000043
+both exist: 000903
+both exist: 000905
+'''
+class DUPLICATED_CODE_IN_MARKETS:
+    pass

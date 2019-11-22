@@ -7,9 +7,9 @@ import Gateway.Config as cfg
 from Controller import StockController
 from Common.Log.Logger import Logger
 from Common import CommonUtils
+from Core.Provider.ConfigProvider import ConfigProvider
 
-import threading
-import time
+from multiprocessing import Pool
 
 EIGHT_DIAGRAMS_COL = 'eight_diagrams'
 
@@ -26,10 +26,16 @@ class EightDiagrams(object):
         8: 1.0
     }
 
+    stock_controller = StockController.StockController()
+    stock_provider = StockProvider.StockProvider()
+    logger = Logger.get_logger(__name__)
+    cfg_provider = ConfigProvider()
+
     def __init__(self):
-        self.__stock_controller = StockController.StockController()
-        self.__stock_provider = StockProvider.StockProvider()
-        self.__logger = Logger.get_logger(__name__)
+        self.stock_controller = EightDiagrams.stock_controller
+        self.stock_provider = EightDiagrams.stock_provider
+        self.logger = EightDiagrams.logger
+        self.cfg_provider = EightDiagrams.cfg_provider
 
     def get_industry_stocks_with_eight_diagrams(self, stock_date_type: StockDataType, start_date: str, end_date: str, ma_list: [],
                                                 industry_code: cfg.IndustryCode = None, industry_ids: [] = None):
@@ -44,7 +50,7 @@ class EightDiagrams(object):
         industry_stocks_with_ma_map = {}
         stocks_ed_df_map = {}
         if industry_code is not None:
-            industry_name_df = self.__stock_provider.get_industries(industry_code)['name']
+            industry_name_df = self.stock_provider.get_industries(industry_code)['name']
             # industry_name_map = {}
             for index, row in industry_name_df.iterrows():
                 industry_ids.append(index)
@@ -56,14 +62,16 @@ class EightDiagrams(object):
 
 
             industry_stocks_with_ma_map[ind_id] = {}
-            stock_ids = self.__stock_provider.get_industry_stocks(ind_id)
-            self.__logger.debug(f"start to query {len(stock_ids)} stocks of industry: {ind_id}")
+            # stock_ids = self.__stock_provider.get_industry_stocks(ind_id)
+            stock_ids = ['000001', '000002', '000004', '000005', '000006',
+                         '000007', '000008', '000009', '000010', '000011']
+            self.logger.debug(f"start to query {len(stock_ids)} stocks of industry: {ind_id}")
 
             ind_ed_df = self.__get_batch_stocks_ed_df(
                 stock_ids, stocks_ed_df_map, stock_date_type, start_date, end_date, ma_list)
 
             if ind_ed_df.empty:
-                self.__logger.warning(f"the index ed df is null for index {ind_id}")
+                self.logger.warning(f"the index ed df is null for index {ind_id}")
                 continue
 
             # self.__logger.debug(ind_ed_df.to_string())
@@ -74,7 +82,7 @@ class EightDiagrams(object):
             ind_ed_df = ind_ed_df.drop('date', axis=1)
             ind_ed_score_df[EIGHT_DIAGRAMS_COL] = ind_ed_df.apply(lambda row: EightDiagrams.__get_ed_score(row), axis=1).round(2)
             # ind_ed_score_df = ind_ed_score_df.set_index('date')
-            self.__logger.debug(ind_ed_score_df.to_string())
+            self.logger.debug(ind_ed_score_df.to_string())
             industry_stocks_with_ma_map[ind_id] = ind_ed_score_df
 
         return industry_stocks_with_ma_map
@@ -99,17 +107,17 @@ class EightDiagrams(object):
                 pass
 
             block_stocks_with_ma_map[block_name] = {}
-            stock_ids = self.__stock_provider.get_block_stocks(StockDataSource.TDX, block_name)
-            self.__logger.debug(f"start to query {len(stock_ids)} stocks of block: {block_name}")
+            stock_ids = EightDiagrams.stock_provider.get_block_stocks(StockDataSource.TDX, block_name)
+            EightDiagrams.logger.debug(f"start to query {len(stock_ids)} stocks of block: {block_name}")
 
-            block_ed_df = self.__get_batch_stocks_ed_df(
+            block_ed_df = EightDiagrams.__get_batch_stocks_ed_df(
                 stock_ids, stocks_ed_df_map, stock_date_type, start_date, end_date, ma_list)
 
             if block_ed_df.empty:
-                self.__logger.warning(f"the index ed df is null for index {block_name}")
+                EightDiagrams.logger.warning(f"the index ed df is null for index {block_name}")
                 continue
 
-            # self.__logger.debug(ind_ed_df.to_string())
+            # EightDiagrams.__logger.debug(ind_ed_df.to_string())
 
             ind_ed_score_df = pd.DataFrame()
             block_ed_df = block_ed_df.reset_index('date')
@@ -117,7 +125,7 @@ class EightDiagrams(object):
             block_ed_df = block_ed_df.drop('date', axis=1)
             ind_ed_score_df[EIGHT_DIAGRAMS_COL] = block_ed_df.apply(lambda row: EightDiagrams.__get_ed_score(row), axis=1).round(2)
             # ind_ed_score_df = ind_ed_score_df.set_index('date')
-            self.__logger.debug(ind_ed_score_df.to_string())
+            EightDiagrams.logger.debug(ind_ed_score_df.to_string())
             block_stocks_with_ma_map[block_name] = ind_ed_score_df
 
         return block_stocks_with_ma_map
@@ -165,69 +173,82 @@ class EightDiagrams(object):
 
     def __get_batch_stocks_ed_df(self, stock_ids: [], stocks_ed_df_map: {},
                                  stock_date_type: StockDataType, start_date: str, end_date: str, ma_list: []):
-        batch_stocks_ed_df1 = pd.DataFrame()
-        batch_stocks_ed_df2 = pd.DataFrame()
+        processes_number = self.cfg_provider.get_multi_processes_number('eight_diagram')
+        prev_idx = 0
+        cur_idx = 0
+        slot_count = int(len(stock_ids) / processes_number) + 1
 
-        pivot = int(len(stock_ids)/2)
-        t1 = threading.Thread(target=self.__get_limited_batch_stocks_ed_df, args=(stock_ids[:pivot], stocks_ed_df_map, stock_date_type,
-                                                                       start_date, end_date, ma_list, batch_stocks_ed_df1,))
-        print(f'thread 1 ')
-        t2 = threading.Thread(target=self.__get_limited_batch_stocks_ed_df, args=(stock_ids[pivot:], stocks_ed_df_map, stock_date_type,
-                                                                       start_date, end_date, ma_list, batch_stocks_ed_df2,))
-        print(f'thread 2 ')
+        pool = Pool(processes=processes_number)
+        ret_df = pd.DataFrame()
+        batch_dfs = []
 
-        t1.start()
-        t2.start()
+        for i in range(processes_number):
+            cur_idx += slot_count
+            async_res = pool.apply_async(func=get_limited_batch_stocks_ed_df, args=(stock_ids[prev_idx:cur_idx], stocks_ed_df_map, stock_date_type,
+                                                                        start_date, end_date, ma_list,))
+            batch_dfs.append(async_res)
+            prev_idx = cur_idx
 
-        t1.join()
-        t2.join()
+            if cur_idx >= len(stock_ids):
+                break
 
-        print(f'multiple threads done!')
+        pool.close()
+        pool.join()
 
-        return batch_stocks_ed_df1.merge(batch_stocks_ed_df2, how='left', left_index=True, right_index=True)
-
-
-    def __get_limited_batch_stocks_ed_df(self, stock_ids: [], stocks_ed_df_map: {},
-                       stock_date_type: StockDataType, start_date: str, end_date: str, ma_list: [], batch_stocks_ed_df: pd.DataFrame):
-        # batch_stocks_ed_df = pd.DataFrame()
-        for s_id in stock_ids:
-            # generate eight diagram scores
-            stock_ed_df = pd.DataFrame()
-            stock_id = self.__stock_provider.normalize_stock_id(StockDataSource.JQDATA, s_id)
-
-            if stock_id in stocks_ed_df_map:
-                stock_ed_df = stocks_ed_df_map[stock_id]
+        for async_batch_df in batch_dfs:
+            cur_df = async_batch_df.get()
+            if CommonUtils.is_df_none_or_empty(ret_df) or \
+                    len(ret_df.index) < len(cur_df.index):
+                ret_df = cur_df.merge(ret_df, how='left', left_index=True, right_index=True)
             else:
-                stock_with_ma = \
-                    self.__stock_controller.get_stock_with_ma(stock_date_type, stock_id, start_date, end_date,
-                                                              ma_list).dropna()
-                # stock_with_ma = pd.read_csv("/Users/muzwang/gocode/src/github.com/QuantTest/Tests/stock_with_ma.csv").dropna()
+                ret_df = ret_df.merge(cur_df, how='left', left_index=True, right_index=True)
 
-                # if there is no valid stock ma df generated. Ignore the stock and continue
-                if CommonUtils.is_df_none_or_empty(stock_with_ma):
-                    self.__logger.warning(f"get NONE stock with ma for stock {stock_id}")
-                    continue
-                else:
-                    stock_ed_df['date'] = stock_with_ma['date']
-                    # ed_arr = []
-                    # for _, row in stock_with_ma.iterrows():
-                    #     ed_arr.append(EightDiagrams.get_eight_diagrams_score(row, ma_list))
+        self.logger.debug(f'multiple processes with {processes_number} processes done!')
 
-                    # stock_ed_df[stock_id] = ed_arr
-                    stock_ed_df[stock_id] = stock_with_ma.apply(
-                        (lambda row: EightDiagrams.get_eight_diagrams_score(row, ma_list)), axis=1)
-                    stock_ed_df = stock_ed_df.set_index('date')
-                    stocks_ed_df_map[stock_id] = stock_ed_df
+        return ret_df
 
-            if batch_stocks_ed_df.empty or len(batch_stocks_ed_df.index) < len(stock_ed_df.index):
-                batch_stocks_ed_df = stock_ed_df.merge(batch_stocks_ed_df, how='left', left_index=True, right_index=True)
+
+
+def get_limited_batch_stocks_ed_df(stock_ids: [], stocks_ed_df_map: {},
+                                   stock_date_type: StockDataType, start_date: str,
+                                   end_date: str, ma_list: []):
+    batch_stocks_ed_df = pd.DataFrame()
+    for s_id in stock_ids:
+        # generate eight diagram scores
+        stock_ed_df = pd.DataFrame()
+        stock_id = EightDiagrams.stock_provider.normalize_stock_id(StockDataSource.JQDATA, s_id)
+
+        if stock_id in stocks_ed_df_map:
+            stock_ed_df = stocks_ed_df_map[stock_id]
+        else:
+            stock_with_ma = \
+                EightDiagrams.stock_controller.get_stock_with_ma(stock_date_type, stock_id, start_date, end_date,
+                                                          ma_list).dropna()
+            # stock_with_ma = pd.read_csv("/Users/muzwang/gocode/src/github.com/QuantTest/Tests/stock_with_ma.csv").dropna()
+
+            # if there is no valid stock ma df generated. Ignore the stock and continue
+            if CommonUtils.is_df_none_or_empty(stock_with_ma):
+                EightDiagrams.logger.warning(f"get NONE stock with ma for stock {stock_id}")
+                continue
             else:
-                batch_stocks_ed_df = batch_stocks_ed_df.merge(stock_ed_df, how='left', left_index=True, right_index=True)
+                stock_ed_df['date'] = stock_with_ma['date']
+                # ed_arr = []
+                # for _, row in stock_with_ma.iterrows():
+                #     ed_arr.append(EightDiagrams.get_eight_diagrams_score(row, ma_list))
 
-            # self.__logger.debug(ind_ed_df.to_string())
+                # stock_ed_df[stock_id] = ed_arr
+                stock_ed_df[stock_id] = stock_with_ma.apply(
+                    (lambda row: EightDiagrams.get_eight_diagrams_score(row, ma_list)), axis=1)
+                stock_ed_df = stock_ed_df.set_index('date')
+                stocks_ed_df_map[stock_id] = stock_ed_df
 
-        return batch_stocks_ed_df
+        if CommonUtils.is_df_none_or_empty(batch_stocks_ed_df) or \
+                len(batch_stocks_ed_df.index) < len(stock_ed_df.index):
+            batch_stocks_ed_df = stock_ed_df.merge(batch_stocks_ed_df, how='left', left_index=True, right_index=True)
+        else:
+            batch_stocks_ed_df = batch_stocks_ed_df.merge(stock_ed_df, how='left', left_index=True, right_index=True)
 
+        # EightDiagrams.__logger.debug(batch_stocks_ed_df.to_string())
 
-
-
+    # print(f'batch stock df: {batch_stocks_ed_df.head()}')
+    return batch_stocks_ed_df

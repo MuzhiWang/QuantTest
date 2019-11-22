@@ -22,7 +22,7 @@ class TestStrategies(unittest.TestCase):
     @running_time
     def test_eight_diagrams_get_industry_stocks_with_ma(self):
         dic = self.__strategy.get_industry_stocks_with_eight_diagrams(StockDataType.ONE_MIN,
-                                                                      start_date="2019-09-27", end_date="2019-11-02",
+                                                                      start_date="2019-07-27", end_date="2019-11-02",
                                                                       ma_list=[DF_MA.MACatogary.TWNTY_DAYS,
                                                                                DF_MA.MACatogary.TEN_DAYS,
                                                                                DF_MA.MACatogary.FIVE_DAYS],

@@ -10,3 +10,5 @@
 - Close open socket
 - `Add annotation for func running time`
 - Create Context to contains basic components such as logger, Utils etc.
+- Support CUDA on calculating DF. install cuDF
+

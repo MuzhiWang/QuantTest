@@ -11,9 +11,13 @@
       },
       "ONE_MIN": {
         "sh": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sh\\minline",
-        "sz": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sz\\minline"
+        "sz": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sz\\minline",
+        "sz2": "/Users/muzwang/gocode/src/github.com/QuantTest/Tests/LC1/SZ"
       },
       "BLOCK": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\T0002\\hq_cache\\block_zs.dat"
     }
+  },
+  "multi_processes": {
+    "eight_diagram": 5
   }
 }

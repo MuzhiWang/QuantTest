@@ -49,7 +49,7 @@ class TestProvider(unittest.TestCase):
     @unittest.skip
     def test_provider_tdx_store_local(self):
         start = time.time()
-        self.provider.get_and_store_local_stock(StockConfig.StockDataSource.TDX, StockConfig.StockDataType.DAILY)
+        self.provider.get_and_store_local_stock(StockConfig.StockDataSource.TDX, StockConfig.StockDataType.ONE_MIN)
         print(f"test_provider tdx store local spend time: {(time.time() - start) * 1000} ms")
 
     @unittest.skip

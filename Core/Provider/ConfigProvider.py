@@ -30,4 +30,7 @@ class ConfigProvider(object):
     def get_tdx_block_directory_path(self):
         return self.get_config()['paths']['tdx_directory_path']['BLOCK']
 
+    def get_multi_processes_number(self, target: str):
+        return self.get_config()['multi_processes'][target]
+
 

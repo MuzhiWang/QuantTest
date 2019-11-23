@@ -1,6 +1,7 @@
 import time
 from Config import StockConfig
 from Core.Provider import StockProvider
+from Common.RunningTimeDecorator import running_time
 
 class LocalSyncTask(object):
 
@@ -10,12 +11,15 @@ class LocalSyncTask(object):
         self.__stock_provider = StockProvider.StockProvider()
 
 
+    @running_time
     def tdx_local_sync_task(self):
         print(f"start to sync TDX data from local files")
-        start = time.time()
-        self.__stock_provider.get_and_store_local_stock(StockConfig.StockDataSource.TDX,
-                                                        StockConfig.StockDataType.FIVE_MINS)
-        print(f"sync task {self.__str__()} spend time: {(time.time() - start) * 1000} ms")
+        self.__stock_provider.get_and_store_local_stock(data_source=StockConfig.StockDataSource.TDX,
+                                                        stock_data_type=StockConfig.StockDataType.FIVE_MINS,
+                                                        force_upsert=False)
+        self.__stock_provider.get_and_store_local_stock(data_source=StockConfig.StockDataSource.TDX,
+                                                        stock_data_type=StockConfig.StockDataType.ONE_MIN,
+                                                        force_upsert=False)
 
 
 

@@ -1,10 +1,11 @@
 from pytdx.reader import lc_min_bar_reader, block_reader
 from pytdx.reader.block_reader import BlockReader_TYPE_GROUP
 from pytdx.hq import TdxHq_API, TDXParams
-import time
 import pandas as pd
-from Common.CommonUtils import *
+import Common.CommonUtils as com_utils
+from Common.Exception.UnimplementedException import UnimplementedException
 from Core.Provider import ConfigProvider
+import Gateway.Config as cfg
 
 class TDX_GW(object):
 
@@ -34,24 +35,48 @@ class TDX_GW(object):
         file_path = self.__cfg_provider.get_tdx_block_directory_path()
         return self.__block_reader.get_df(file_path, BlockReader_TYPE_GROUP)
 
-    def get_realtime_stock_1min_bars(self, stock_id: str):
+    def get_realtime_stock_1min_bars(self, market: str, stock_id: str):
         with self.__tdx_api.connect(self.__connected_ip, self.__connected_port):
+            market_code = self.__get_market_code(market)
             df = self.__tdx_api.to_df(
-                self.__tdx_api.get_security_bars(8, 0, stock_id, 0, 10))  # 返回DataFrame
+                self.__tdx_api.get_security_bars(8, market_code, stock_id, 0, 10))  # 返回DataFrame
             return df
 
     def get_realtime_stocks_quotes(self, stock_ids: []):
         stock_list = []
         for id in stock_ids:
-            stock_list.append((get_stock_market(id), id))
+            stock_list.append((com_utils.get_stock_market(id), id))
         with self.__tdx_api.connect(self.__connected_ip, self.__connected_port):
             return self.__tdx_api.get_security_quotes(stock_list)
 
+    def get_history_minute_time_data(self, market: str, stock_id: str, date: int):
+        with self.__tdx_api.connect(self.__connected_ip, self.__connected_port):
+            market_code = self.__get_market_code(market)
+            df = self.__tdx_api.to_df(
+                self.__tdx_api.get_history_minute_time_data(market_code, stock_id, date))
+            return df
+
+    def get_xdxr_info(self, market: str, stock_id: str):
+        with self.__tdx_api.connect(self.__connected_ip, self.__connected_port):
+            market_code = self.__get_market_code(market)
+            df = self.__tdx_api.to_df(
+                self.__tdx_api.get_xdxr_info(market_code, stock_id))
+            return df
+
     def test(self):
         with self.__tdx_api.connect(self.__connected_ip, self.__connected_port):
-            return self.__tdx_api.to_df(
-                # self.__tdx_api.get_history_minute_time_data(31, "00020", 20190808)
-                # self.__tdx_api.get_instrument_bars(TDXParams.KLINE_TYPE_DAILY, 8, "10000843", 0, 100)
-                # self.__tdx_api.get_block_info()
-            )
+            return self.__tdx_api.get_history_minute_time_data(0, '000001', '2019-05-05')
+
+    def __get_market_code(self, market: str):
+        if market == cfg.MARKET.SHANGHAI:
+            return 1
+        elif market == cfg.MARKET.SHENZHEN:
+            return 0
+        else:
+            raise UnimplementedException
+
+# if __name__ == '__main__':
+#     tdx = TDX_GW()
+#     print(tdx.test())
+
 

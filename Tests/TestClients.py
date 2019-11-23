@@ -135,6 +135,7 @@ class TestClients(unittest.TestCase):
         res = self.jqdate_client.normalize_stock_id("000019.XSHE")
         print(res)
         print(self.jqdate_client.normalize_stock_id("000001.XSHG"))
+        print(self.jqdate_client.normalize_stock_id(self.jqdate_client.normalize_code("sz000001")))
 
     def test_jqdata_client_normalize_code(self):
         print(self.jqdate_client.normalize_code("sz000001"))
@@ -163,7 +164,7 @@ class TestClients(unittest.TestCase):
 
     # @unittest.skip
     def test_tdx_client_get_realtime_stock(self):
-        df = self.tdx_client.get_realtime_stock_1min_bars("002807")
+        df = self.tdx_client.get_realtime_stock_1min_bars('sh', "002807")
         self.logger.debug(df.to_string())
 
 
@@ -171,6 +172,16 @@ class TestClients(unittest.TestCase):
     def test_tdx_client_get_realtime_stocks_quotas(self):
         res = self.tdx_client.get_realtime_stocks_quotes(["000001", '000002'])
         print(res)
+
+    # @unittest.skip
+    def test_tdx_client_get_history_minute_time_data(self):
+        res = self.tdx_client.get_history_minute_time_data('sh', '000001', 20160607)
+        print(res)
+
+    # @unittest.skip
+    def test_tdx_client_get_xdxr_info(self):
+        res = self.tdx_client.get_xdxr_info('sh', '600381')
+        print(res.to_string())
 
     # @unittest.skip
     def test_file_utils(self):

@@ -17,6 +17,8 @@ class Constant:
         StockDataSource.TDX: "date"
     }
 
+    IDX_SUFFIX = '.IDX'
+
     TDX_BLOCK_CODE_LIST = 'code_list'
     TDX_BLOCK_NAME = 'blockname'
 
@@ -43,6 +45,10 @@ class JQDATA_SUFFIX:
     SZ = 'XSHE'
 
 
+class MARKET:
+    SHANGHAI = 'sh'
+    SHENZHEN = 'sz'
+
 '''
 both exist: 000001
 both exist: 000002
@@ -55,5 +61,16 @@ both exist: 000043
 both exist: 000903
 both exist: 000905
 '''
-class DUPLICATED_CODE_IN_MARKETS:
-    pass
+class DUPLICATED_INDEX_CODE_IN_MARKETS:
+    code_map = {
+        '000001': MARKET.SHANGHAI,
+        '000002': MARKET.SHANGHAI,
+        '000009': MARKET.SHANGHAI,
+        '000010': MARKET.SHANGHAI,
+        '000016': MARKET.SHANGHAI,
+        '000017': MARKET.SHANGHAI,
+        '000019': MARKET.SHANGHAI,
+        '000043': MARKET.SHANGHAI,
+        '000903': MARKET.SHANGHAI,
+        '000905': MARKET.SHANGHAI,
+    }

@@ -22,9 +22,9 @@ class StockWindow(QtWidgets.QMainWindow):
 if __name__ == '__main__':
     stock_provider = StockProvider()
     df = stock_provider.get_stock_df(StockDataSource.TDX, StockDataType.ONE_MIN,
-                                     '000903', '2019-07-25', '2019-11-15')
+                                     '000001', '2019-07-25', '2019-11-20')
     df_dict = {
-        '000903 中证100': df
+        '000001 sz': df
     }
 
     print(df_dict)

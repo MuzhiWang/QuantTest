@@ -33,13 +33,13 @@ class TestStrategies(unittest.TestCase):
     @running_time
     def test_eight_diagrams_get_block_stocks_with_ma(self):
         dic = self.__strategy.get_block_stocks_with_eight_diagrams(StockDataType.FIVE_MINS,
-                                                                      start_date="2019-07-27", end_date="2019-11-07",
+                                                                      start_date="2019-07-27", end_date="2019-11-20",
                                                                       ma_list=[DF_MA.MACatogary.TWNTY_DAYS,
                                                                                DF_MA.MACatogary.TEN_DAYS,
                                                                                DF_MA.MACatogary.FIVE_DAYS],
-                                                                      block_names=[TDX_BLOCK_NAME.ZHONGZHENG_100, TDX_BLOCK_NAME.HUSHENG_300])
+                                                                      block_names=[TDX_BLOCK_NAME.HUSHENG_300])
 
-        TestStrategies.__logger.info(dic)
+        TestStrategies.__logger.debug(dic)
 
     @running_time
     def test_eight_diagrams_get_ed_score(self):

@@ -31,9 +31,10 @@ if __name__ == '__main__':
                                                                            DF_MA.MACatogary.TEN_DAYS,
                                                                            DF_MA.MACatogary.FIVE_DAYS],
                                                                   # industry_ids=["852121", "801018"])
-                                                                  block_names=[TDX_BLOCK_NAME.ZHONGZHENG_100,
-                                                                               TDX_BLOCK_NAME.CHUANGYEBANZHI,
-                                                                               TDX_BLOCK_NAME.ZHONGZHENGHONGLI])
+                                                                  # block_names=[TDX_BLOCK_NAME.ZHONGZHENG_100,
+                                                                  #              TDX_BLOCK_NAME.CHUANGYEBANZHI,
+                                                                  #              TDX_BLOCK_NAME.ZHONGZHENGHONGLI])
+                                                                  block_names=[TDX_BLOCK_NAME.HUSHENG_300])
 
     app = QtWidgets.QApplication(sys.argv)
     aw = ApplicationWindow(df_dict=ed_dict, y_asix='eight_diagrams')

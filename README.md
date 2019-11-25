@@ -9,6 +9,14 @@ pip3 install matplotlib
 pip3 install pymongo
 pip3 install pytdx
 pip3 install jqdatasdk
+pip3 install flask
+```
+
+```
+python dependency not correct, so that the site-package could not be found:
+- find related python
+- .\python.exe -m pip install flask
+
 ```
 
 # MongoDB initialization

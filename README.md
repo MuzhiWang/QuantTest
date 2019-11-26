@@ -27,3 +27,8 @@ mkdir D:\Data\mongodb\log
 {mongodb_path}\mongod.exe  --dbpath D:\Data\mongodb\db
 ```
 
+
+```
+Local python path:  C:\Users\wmz66\AppData\Local\Programs\Python\Python37
+
+```

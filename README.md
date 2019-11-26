@@ -10,6 +10,7 @@ pip3 install pymongo
 pip3 install pytdx
 pip3 install jqdatasdk
 pip3 install flask
+pip3 install pyinstaller
 ```
 
 ```
@@ -25,3 +26,4 @@ mkdir D:\Data\mongodb\db
 mkdir D:\Data\mongodb\log
 {mongodb_path}\mongod.exe  --dbpath D:\Data\mongodb\db
 ```
+

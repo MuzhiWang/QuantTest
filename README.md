@@ -28,7 +28,8 @@ mkdir D:\Data\mongodb\log
 ```
 
 
+## Local hints:
 ```
 Local python path:  C:\Users\wmz66\AppData\Local\Programs\Python\Python37
-
+Local luanch server: C:\Users\wmz66\AppData\Local\Programs\Python\Python37\python.exe .\App\Server.py
 ```

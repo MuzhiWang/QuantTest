@@ -10,6 +10,7 @@ pip3 install pymongo
 pip3 install pytdx
 pip3 install jqdatasdk
 pip3 install flask
+pip3 install flask-cors
 pip3 install pyinstaller
 ```
 

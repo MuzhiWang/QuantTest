@@ -1,4 +1,5 @@
 from flask import Flask, request
+from flask_cors import CORS
 
 import os.path
 import sys
@@ -9,6 +10,7 @@ from Config.StockConfig import StockDataSource, StockDataType
 from Core.Provider.StockProvider import StockProvider
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/get_stock_df', methods=['GET'])
 def get_stock_df():

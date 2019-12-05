@@ -13,6 +13,7 @@
 - Support CUDA on calculating DF. install cuDF
 - `Support multiple processes`
 - Get history 1min data. From tdx get_history_minute_time_data()
+- Improve daily df store in mongodb. Make each record with ONE year's df.
 
 
 

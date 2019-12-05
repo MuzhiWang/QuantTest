@@ -11,7 +11,7 @@ class StockDataNameFormat:
 class Constant:
     ID = "_id"
     TRADE_DATE = "trade_date"
-    TRADE_TIME = "trade_time"
+    TRADE_YEAR = "trade_year"
     DATAFRAME = "df"
 
     STORED_DATES_STATUS_ID = bson.ObjectId("5dc5166437b0ee6779f63918")

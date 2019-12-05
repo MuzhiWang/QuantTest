@@ -57,18 +57,17 @@ class StockProvider(object):
 
     # read local stock file and store it in DB
     def get_and_store_local_stock(self, data_source: StockConfig.StockDataSource,
-                                  stock_data_type: StockConfig.StockDataType,
-                                  stock_id: str = None, force_upsert=False):
+                                  stock_data_type: StockConfig.StockDataType, stock_ids: [] = None,
+                                  force_upsert=False):
         if data_source is not StockConfig.StockDataSource.TDX:
             raise Exception("only support for TDX in local")
 
-        if stock_id is not None:
-            raise Exception("unimplemented")
         tdx_dir = self.__config_provider.get_tdx_stock_directory_path(stock_data_type)
         for exchange, path in tdx_dir.items():
             print(f"start to get and store local 1min stock data for exchange {exchange} ...")
             self.__get_local_files_and_store_stock(data_source, stock_data_type, exchange,
-                                                   FileUtils.convert_file_path_based_on_system(path), force_upsert)
+                                                   FileUtils.convert_file_path_based_on_system(path), stock_ids,
+                                                   force_upsert)
 
     def get_stock_df(self, data_source: StockConfig.StockDataSource,
                      stock_data_type: StockConfig.StockDataType, stock_id: str, start_date: str,
@@ -126,9 +125,17 @@ class StockProvider(object):
 
     def __get_local_files_and_store_stock(self, data_source: StockConfig.StockDataSource,
                                           stock_data_type: StockConfig.StockDataType, exchange: str, dir_path: str,
-                                          force_upsert: bool = False):
+                                          stock_ids: [] = None, force_upsert: bool = False):
         if data_source is not StockConfig.StockDataSource.TDX:
             raise Exception("only support for TDX in local")
+
+        stock_dict = {}
+        store_selected_stocks = False
+        if stock_ids is not None and len(stock_ids) > 0:
+            store_selected_stocks = True
+            for s_id in stock_ids:
+                if s_id not in stock_dict:
+                    stock_dict[s_id] = True
 
         all_files = FileUtils.get_all_files(dir_path)
         for file in all_files:
@@ -137,8 +144,14 @@ class StockProvider(object):
             if stock_name in cfg.DUPLICATED_INDEX_CODE_IN_MARKETS.code_map:
                 if cfg.DUPLICATED_INDEX_CODE_IN_MARKETS.code_map[stock_name] == exchange:
                     stock_name = stock_name + cfg.Constant.IDX_SUFFIX
+
+            # If selected stocks exist, only store selected stocks.
+            if store_selected_stocks:
+                if stock_name not in stock_dict:
+                    continue
+
             file_path = FileUtils.convert_file_path_based_on_system(f"{dir_path}/{file}")
-            df = self.__tdx_gw.get_local_stock_bars(file_path)
+            df = self.__tdx_gw.get_local_stock_bars(file_path, stock_data_type)
             self.__store_stock_df_data(data_source, stock_data_type, df, stock_name,
                                        force_upsert)
 

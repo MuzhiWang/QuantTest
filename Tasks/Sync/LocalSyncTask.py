@@ -21,7 +21,19 @@ class LocalSyncTask(object):
                                                         stock_data_type=StockConfig.StockDataType.ONE_MIN,
                                                         force_upsert=False)
 
+        ### WARNING: If the DAILY data is too much, such as from 2000 - present. It will take unexpected time to
+        ### finish the job. May need to improve this or use multiple processing.
+        # self.__stock_provider.get_and_store_local_stock(data_source=StockConfig.StockDataSource.TDX,
+        #                                                 stock_data_type=StockConfig.StockDataType.DAILY,
+        #                                                 force_upsert=False)
 
+    @running_time
+    def tdx_local_sync_stocks_task(self, stock_ids:[], stock_date_type: StockConfig.StockDataType):
+        print(f"start to sync TDX data from local files for stocks: {stock_ids}")
+        self.__stock_provider.get_and_store_local_stock(data_source=StockConfig.StockDataSource.TDX,
+                                                        stock_data_type=stock_date_type,
+                                                        stock_ids=stock_ids,
+                                                        force_upsert=False)
 
 
 if __name__ == "__main__":

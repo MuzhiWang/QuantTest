@@ -2,8 +2,8 @@
   "paths": {
     "tdx_directory_path": {
       "DAILY": {
-        "sh": "",
-        "sz": ""
+        "sh": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sh\\lday",
+        "sz": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sz\\lday"
       },
       "FIVE_MINS": {
         "sh": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sh\\fzline",

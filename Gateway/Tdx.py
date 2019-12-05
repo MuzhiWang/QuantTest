@@ -1,4 +1,4 @@
-from pytdx.reader import lc_min_bar_reader, block_reader
+from pytdx.reader import lc_min_bar_reader, TdxDailyBarReader, block_reader
 from pytdx.reader.block_reader import BlockReader_TYPE_GROUP
 from pytdx.hq import TdxHq_API, TDXParams
 import pandas as pd
@@ -6,31 +6,41 @@ import Common.CommonUtils as com_utils
 from Common.Exception.UnimplementedException import UnimplementedException
 from Core.Provider import ConfigProvider
 import Gateway.Config as cfg
+from Config.StockConfig import StockDataType
 
 class TDX_GW(object):
 
     __lc_min_bar_reader = None
+    __daily_bar_reader = None
     __tdx_api = None
     __connected_ip = '119.147.212.81'
     __connected_port = 7709
 
     def __init__(self):
         self.__lc_min_bar_reader = lc_min_bar_reader.TdxLCMinBarReader()
+        self.__daily_bar_reader = TdxDailyBarReader()
         self.__block_reader = block_reader.BlockReader()
         self.__tdx_api = TdxHq_API()
         self.__cfg_provider = ConfigProvider.ConfigProvider()
 
 
-    def get_local_stock_bars(self, file_path: str):
-        # start = time.time()
-        # df = self.__lc_min_bar_reader.get_df(file_path)
-        data = self.__lc_min_bar_reader.parse_data_by_file(file_path)
-        df = pd.DataFrame(data=data)
-        # df = df['date', 'open', 'high', 'low', 'close', 'amount', 'volume']
-        # print(f"TDX get 1min bar time spent: {(time.time() - start) * 1000} ms")
+    def get_local_stock_bars(self, file_path: str, stock_date_type: StockDataType):
+        if stock_date_type == StockDataType.ONE_MIN or \
+            stock_date_type == StockDataType.FIVE_MINS:
+            # start = time.time()
+            # df = self.__lc_min_bar_reader.get_df(file_path)
+            data = self.__lc_min_bar_reader.parse_data_by_file(file_path)
+            df = pd.DataFrame(data=data)
+            # df = df['date', 'open', 'high', 'low', 'close', 'amount', 'volume']
+            # print(f"TDX get 1min bar time spent: {(time.time() - start) * 1000} ms")
 
-        return df[['date', 'open', 'high', 'low', 'close', 'amount', 'volume']]
-
+            return df[['date', 'open', 'high', 'low', 'close', 'amount', 'volume']]
+        elif stock_date_type == StockDataType.DAILY:
+            data = self.__daily_bar_reader.get_df(file_path).reset_index()
+            data['date'] = data['date'].dt.strftime('%Y-%m-%d')
+            return data[['date', 'open', 'high', 'low', 'close', 'amount', 'volume']]
+        else:
+            raise UnimplementedException
     def get_local_block(self):
         file_path = self.__cfg_provider.get_tdx_block_directory_path()
         return self.__block_reader.get_df(file_path, BlockReader_TYPE_GROUP)

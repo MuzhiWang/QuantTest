@@ -76,6 +76,14 @@ class TestProvider(unittest.TestCase):
         # print(r.to_string())
 
     # @unittest.skip
+    @running_time
+    def test_provider_get_day_stock(self):
+        df = self.provider.get_stock_df(StockConfig.StockDataSource.TDX, StockConfig.StockDataType.DAILY, "000003",
+                                        "2003-07-23", "2019-11-01")
+        # print(df.to_string())
+
+
+    # @unittest.skip
     def test_normalize_stock_id(self):
         res = self.provider.normalize_stock_id(StockConfig.StockDataSource.JQDATA, "000019.XSHE")
         print(res)

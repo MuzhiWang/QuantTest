@@ -103,10 +103,11 @@ class TestClients(unittest.TestCase):
         print(a)
 
     @unittest.skip
+    @running_time
     def test_mongodb_get_and_store_dates_status(self):
-        self.mongodb_client.save_dates(StockDataSource.JQDATA, StockDataType.DAILY, "000001", "2019-01-11",
+        self.mongodb_client.save_dates(StockDataSource.TDX, StockDataType.DAILY, "000003", "2012-01-11",
                                        "2019-02-01")
-        res = self.mongodb_client.get_stored_dates(StockDataSource.JQDATA, StockDataType.DAILY, "000001")
+        res = self.mongodb_client.get_stored_dates(StockDataSource.TDX, StockDataType.DAILY, "000003")
         print(res)
 
     @unittest.skip
@@ -149,7 +150,7 @@ class TestClients(unittest.TestCase):
     @unittest.skip
     def test_tdx_client_get_local_1min_bars(self):
         df = self.tdx_client.get_local_stock_bars(
-            FileUtils.convert_file_path_based_on_system(".\\LC1\\SZ\\sz000001.lc1"))
+            FileUtils.convert_file_path_based_on_system(".\\LC1\\SZ\\sz000001.lc1"), StockDateType.ONE_MIN)
         print(df)
         df.to_csv(FileUtils.convert_file_path_based_on_system(".\\CSV\\tdx001.csv"))
         print(df.columns.values)

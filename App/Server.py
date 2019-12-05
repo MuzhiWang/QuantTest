@@ -23,6 +23,7 @@ def get_stock_df():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
     date_type = request.args.get('date_type')
+    index = request.args.get('index')
 
     if stock_id is None or start_date is None \
         or end_date is None or date_type is None:
@@ -34,8 +35,19 @@ def get_stock_df():
     if date_type not in Constants.DATE_TYPE:
         raise InvalidRequestException
 
-    df = stock_provider.get_stock_df(StockDataSource.TDX, Constants.DATE_TYPE[date_type],
+    is_index = False
+    if index is not None and index:
+        is_index = True
+
+    if is_index:
+        df = stock_provider.get_index_df(StockDataSource.TDX, Constants.DATE_TYPE[date_type],
+                                         stock_id, start_date, end_date)
+    else:
+        df = stock_provider.get_stock_df(StockDataSource.TDX, Constants.DATE_TYPE[date_type],
                                      stock_id, start_date, end_date)
+
+    if df is None:
+        raise Exception(f"stock {stock_id} data not exist in system!")
 
     return df.to_json()
 

@@ -32,6 +32,8 @@ mkdir D:\Data\mongodb\log
 # Local server api:
 ```
 Get stock df: http://127.0.0.1:5000/get_stock_df?stock_id=000001&&start_date=2019-07-07&&end_date=2019-11-11&&date_type=1min
+Get index df: http://127.0.0.1:5000/get_stock_df?stock_id=000001&&start_date=2019-07-07&&end_date=2019-11-11&&date_type=1min&&index=True
+
 Powershell: Invoke-RestMethod -Uri 'http://127.0.0.1:5000/get_stock_df?stock_id=000001&&start_date=2019-07-07&&end_date=2019-11-11&&date_type=1min'
 ```
 

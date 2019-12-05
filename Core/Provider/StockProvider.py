@@ -85,6 +85,8 @@ class StockProvider(object):
         if data_source == StockConfig.StockDataSource.TDX:
             if index_id in cfg.DUPLICATED_INDEX_CODE_IN_MARKETS.code_map:
                 index_id = index_id + cfg.Constant.IDX_SUFFIX
+            else:
+                raise Exception(f"the index code {index_id} doesn't exist")
             return self.__mongodb_client.get_stock_price_df(data_source, stock_data_type, index_id, start_date, end_date)
         else:
             raise UnimplementedException

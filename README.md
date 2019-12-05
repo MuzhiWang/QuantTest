@@ -29,6 +29,21 @@ mkdir D:\Data\mongodb\log
 ```
 
 
+# Local server api:
+```
+Get stock df: http://127.0.0.1:5000/get_stock_df?stock_id=000001&&start_date=2019-07-07&&end_date=2019-11-11&&date_type=1min
+Powershell: Invoke-RestMethod -Uri 'http://127.0.0.1:5000/get_stock_df?stock_id=000001&&start_date=2019-07-07&&end_date=2019-11-11&&date_type=1min'
+```
+
+```
+Sync stocks with TDX local files: http://127.0.0.1:5000/sync_stocks_with_tdx_local_files
+PS: Invoke-RestMethod 'http://127.0.0.1:5000/sync_stocks_with_tdx_local_files' -Method Post -Body (@{
+	stock_ids=@('000001','000001.IDX')
+	date_type='day'
+} | ConvertTo-Json) -ContentType 'application/json'
+
+```
+
 ## Local hints:
 ```
 Local python path:  C:\Users\wmz66\AppData\Local\Programs\Python\Python37

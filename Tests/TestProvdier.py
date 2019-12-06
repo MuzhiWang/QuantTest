@@ -6,7 +6,7 @@ import os
 from Common import FileUtils
 import pandas as pd
 import matplotlib.pyplot as plt
-from Gateway.Config import TDX_BLOCK_NAME
+from Gateway.Config import TDX_BLOCK_NAME, IndustryCode
 from Common.RunningTimeDecorator import running_time
 
 
@@ -100,6 +100,21 @@ class TestProvider(unittest.TestCase):
     @running_time
     def test_get_block_stocks(self):
         res = self.provider.get_block_stocks(StockConfig.StockDataSource.TDX, TDX_BLOCK_NAME.ZHONGZHENG_200)
+        print(res)
+
+    @running_time
+    def test_get_all_blocks_with_stocks(self):
+        res = self.provider.get_all_blocks_with_stocks(StockConfig.StockDataSource.TDX)
+        print(res.info())
+
+    @running_time
+    def test_get_industries(self):
+        res = self.provider.get_industries(IndustryCode.sw_l1)
+        print(res)
+
+    @running_time
+    def test_get_industry_stocks(self):
+        res = self.provider.get_industry_stocks('801740')
         print(res)
 
 

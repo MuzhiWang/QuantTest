@@ -25,16 +25,16 @@ if __name__ == '__main__':
     #                                                                           DF_MA.MACatogary.FIVE_DAYS],
     #                                                                  # industry_ids=["852121", "801018"])
     #                                                                  industry_ids=["801111", "801203", "801051"]) # 47 + 50 + 33
-    ed_dict = eight_diagrams.get_block_stocks_with_eight_diagrams(StockDataType.FIVE_MINS,
-                                                                  start_date="2019-07-25", end_date="2019-11-02",
-                                                                  ma_list=[DF_MA.MACatogary.TWNTY_DAYS,
+    ed_dict = eight_diagrams.get_index_block_stocks_with_eight_diagrams(StockDataType.FIVE_MINS,
+                                                                        start_date="2019-07-25", end_date="2019-11-02",
+                                                                        ma_list=[DF_MA.MACatogary.TWNTY_DAYS,
                                                                            DF_MA.MACatogary.TEN_DAYS,
                                                                            DF_MA.MACatogary.FIVE_DAYS],
-                                                                  # industry_ids=["852121", "801018"])
-                                                                  # block_names=[TDX_BLOCK_NAME.ZHONGZHENG_100,
-                                                                  #              TDX_BLOCK_NAME.CHUANGYEBANZHI,
-                                                                  #              TDX_BLOCK_NAME.ZHONGZHENGHONGLI])
-                                                                  block_names=[TDX_BLOCK_NAME.HUSHENG_300])
+                                                                        # industry_ids=["852121", "801018"])
+                                                                        # block_names=[TDX_BLOCK_NAME.ZHONGZHENG_100,
+                                                                        #              TDX_BLOCK_NAME.CHUANGYEBANZHI,
+                                                                        #              TDX_BLOCK_NAME.ZHONGZHENGHONGLI])
+                                                                        block_names=[TDX_BLOCK_NAME.HUSHENG_300])
 
     app = QtWidgets.QApplication(sys.argv)
     aw = ApplicationWindow(df_dict=ed_dict, y_asix='eight_diagrams')

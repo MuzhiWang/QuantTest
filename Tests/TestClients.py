@@ -118,7 +118,12 @@ class TestClients(unittest.TestCase):
 
     # @unittest.skip
     def test_jqdata_client_get_industries(self):
-        res = self.jqdate_client.get_industries(cfg.IndustryCode.sw_l2)
+        str = 'sw_l1'
+        str_enum = cfg.IndustryCode[str]
+        print(str_enum.name)
+
+
+        res = self.jqdate_client.get_industries(cfg.IndustryCode.sw_l1)
         print(res['name'])
 
         for index, row in res.iterrows():
@@ -150,7 +155,7 @@ class TestClients(unittest.TestCase):
     @unittest.skip
     def test_tdx_client_get_local_1min_bars(self):
         df = self.tdx_client.get_local_stock_bars(
-            FileUtils.convert_file_path_based_on_system(".\\LC1\\SZ\\sz000001.lc1"), StockDateType.ONE_MIN)
+            FileUtils.convert_file_path_based_on_system(".\\LC1\\SZ\\sz000001.lc1"), StockDataType.ONE_MIN)
         print(df)
         df.to_csv(FileUtils.convert_file_path_based_on_system(".\\CSV\\tdx001.csv"))
         print(df.columns.values)

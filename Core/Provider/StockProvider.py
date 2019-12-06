@@ -5,7 +5,6 @@ from Common import DatetimeUtils, StringUtils, FileUtils, CommonUtils
 from Config import StockConfig
 import pandas as pd
 from .ConfigProvider import ConfigProvider
-import re
 import Gateway.Config as cfg
 from Common.Exception import UnimplementedException
 
@@ -91,6 +90,19 @@ class StockProvider(object):
         else:
             raise UnimplementedException
 
+
+    def get_all_blocks_with_stocks(self, data_source: StockConfig.StockDataSource):
+        if data_source == StockConfig.StockDataSource.TDX:
+            block_df = self.__tdx_gw.get_local_block()
+            if CommonUtils.is_df_none_or_empty(block_df):
+                raise Exception('get empty block df')
+
+            # return df[['blockname','block_type','stock_count','code_list']]
+            return block_df
+        else:
+            raise UnimplementedException
+
+    # index block e.g. HUSHEN300 etc.
     def get_block_stocks(self, data_source: StockConfig.StockDataSource, block_name: str):
         if data_source == StockConfig.StockDataSource.TDX:
             block_df = self.__tdx_gw.get_local_block()
@@ -103,10 +115,12 @@ class StockProvider(object):
             raise UnimplementedException
 
     def get_industries(self, industry_code: cfg.IndustryCode):
-        return self.__jqdata_gw.get_industries(name=industry_code.name)
+        return self.__jqdata_gw.get_industries(industry_code)
 
     def get_industry_stocks(self, industry_id: str):
-        return self.__jqdata_gw.get_industry_stocks(industry_id)
+        stocks = self.__jqdata_gw.get_industry_stocks(industry_id)
+        res = map(lambda x: x.split('.')[0], stocks)
+        return list(res)
 
     def normalize_stock_id(
             self, stock_data_source: StockConfig.StockDataSource, stock_id: str):

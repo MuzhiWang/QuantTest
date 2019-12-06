@@ -37,6 +37,7 @@ class EightDiagrams(object):
         self.logger = EightDiagrams.logger
         self.cfg_provider = EightDiagrams.cfg_provider
 
+    # get industry such as Electrical
     def get_industry_stocks_with_eight_diagrams(self, stock_date_type: StockDataType, start_date: str, end_date: str, ma_list: [],
                                                 industry_code: cfg.IndustryCode = None, industry_ids: [] = None):
         if industry_ids is None and industry_code is None:
@@ -87,9 +88,9 @@ class EightDiagrams(object):
 
         return industry_stocks_with_ma_map
 
-
-    def get_block_stocks_with_eight_diagrams(self, stock_date_type: StockDataType, start_date: str, end_date: str, ma_list: [],
-                                                block_names: []):
+    # get index block such as HUSHEN300
+    def get_index_block_stocks_with_eight_diagrams(self, stock_date_type: StockDataType, start_date: str, end_date: str, ma_list: [],
+                                                   block_names: []):
         if block_names is None or len(block_names) == 0:
             raise Exception("block must exist")
 

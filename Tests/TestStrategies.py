@@ -21,23 +21,23 @@ class TestStrategies(unittest.TestCase):
     # @unittest.skip
     @running_time
     def test_eight_diagrams_get_industry_stocks_with_ma(self):
-        dic = self.__strategy.get_industry_stocks_with_eight_diagrams(StockDataType.ONE_MIN,
+        dic = self.__strategy.get_industry_stocks_with_eight_diagrams(StockDataType.FIVE_MINS,
                                                                       start_date="2019-07-27", end_date="2019-11-02",
                                                                       ma_list=[DF_MA.MACatogary.TWNTY_DAYS,
                                                                                DF_MA.MACatogary.TEN_DAYS,
                                                                                DF_MA.MACatogary.FIVE_DAYS],
                                                                       industry_ids=["852121"])
 
-        TestStrategies.__logger.info(dic)\
+        TestStrategies.__logger.debug(dic)
 
     @running_time
     def test_eight_diagrams_get_block_stocks_with_ma(self):
-        dic = self.__strategy.get_block_stocks_with_eight_diagrams(StockDataType.FIVE_MINS,
-                                                                      start_date="2019-07-27", end_date="2019-11-20",
-                                                                      ma_list=[DF_MA.MACatogary.TWNTY_DAYS,
+        dic = self.__strategy.get_index_block_stocks_with_eight_diagrams(StockDataType.FIVE_MINS,
+                                                                         start_date="2019-07-27", end_date="2019-11-20",
+                                                                         ma_list=[DF_MA.MACatogary.TWNTY_DAYS,
                                                                                DF_MA.MACatogary.TEN_DAYS,
                                                                                DF_MA.MACatogary.FIVE_DAYS],
-                                                                      block_names=[TDX_BLOCK_NAME.HUSHENG_300])
+                                                                         block_names=[TDX_BLOCK_NAME.HUSHENG_300])
 
         TestStrategies.__logger.debug(dic)
 

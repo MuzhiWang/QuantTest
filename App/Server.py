@@ -14,6 +14,7 @@ import App.WebUtils as webUtils
 from Tasks.Sync.LocalSyncTask import LocalSyncTask
 from Strategies.EightDiagrams import EightDiagrams
 import Gateway.Config as cfg
+from Handler import TdxReader
 
 app = Flask(__name__)
 CORS(app)
@@ -160,4 +161,5 @@ def get_eight_diagrams_scores():
 
 
 if __name__ == '__main__':
+    TdxReader.serve()
     app.run()

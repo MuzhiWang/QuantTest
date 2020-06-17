@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "muzwang.tdx_reader";
+option java_outer_classname = "TdxReaderProto";
+option objc_class_prefix = "TDX";
+
+package tdxreader;
+
+// The greeting service definition.
+service TdxReader {
+  // Sends a greeting
+  rpc Hello (HelloRequest) returns (HelloReply) {}
+}
+
+// The request message containing the user's name.
+message HelloRequest {
+  string name = 1;
+}
+
+// The response message containing the greetings
+message HelloReply {
+  string message = 1;
+}

@@ -41,6 +41,16 @@ class TDX_GW(object):
             return data[['date', 'open', 'high', 'low', 'close', 'amount', 'volume']]
         else:
             raise UnimplementedException
+
+    def get_local_stock_bars_raw_data(self, file_path: str, stock_date_type: StockDataType):
+        if stock_date_type == StockDataType.ONE_MIN or \
+            stock_date_type == StockDataType.FIVE_MINS:
+            return self.__lc_min_bar_reader.parse_data_by_file(file_path)
+        elif stock_date_type == StockDataType.DAILY:
+            return self.__daily_bar_reader.parse_data_by_file(file_path)
+        else:
+            raise UnimplementedException
+
     def get_local_block(self):
         file_path = self.__cfg_provider.get_tdx_block_directory_path()
         return self.__block_reader.get_df(file_path, BlockReader_TYPE_GROUP)

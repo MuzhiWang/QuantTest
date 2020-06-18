@@ -106,6 +106,26 @@ Local luanch server: C:\Users\wmz66\AppData\Local\Programs\Python\Python37\pytho
 ## gRPC
 `python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. .\TdxReader.proto`
 
+##### Need to modify the xxxx_pb2_grpc.python import module as 
+`from . import TdxReader_pb2 as TdxReader__pb2`
 
-## yab
+
+##yab
+#####Test Hello
 `.\yab.exe -p localhost:50051 --procedure tdxreader.TdxReader/Hello --service TdxReader -f test-request.json`
+```
+{
+	"name": "from yabbb hahahahah"
+}
+```
+
+#####Tdx local file reader
+`.\yab.exe -p localhost:50051 --procedure tdxreader.TdxReader/ReadTdxFile --service TdxReader -f .\yab_request\tdx-reader-read-tdx-file.json`
+
+```
+{
+	"filePath": "C:\\Users\\wmz66\\Desktop\\new_jyqyb\\vipdoc\\sz\\minline\\sz000001.lc1",
+	"metric": "ONE_MIN"
+}
+```
+

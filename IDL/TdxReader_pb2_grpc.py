@@ -19,6 +19,11 @@ class TdxReaderStub(object):
                 request_serializer=TdxReader__pb2.HelloRequest.SerializeToString,
                 response_deserializer=TdxReader__pb2.HelloReply.FromString,
                 )
+        self.ReadTdxFile = channel.unary_unary(
+                '/tdxreader.TdxReader/ReadTdxFile',
+                request_serializer=TdxReader__pb2.ReadTdxFileRequest.SerializeToString,
+                response_deserializer=TdxReader__pb2.TdxFileData.FromString,
+                )
 
 
 class TdxReaderServicer(object):
@@ -32,6 +37,13 @@ class TdxReaderServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ReadTdxFile(self, request, context):
+        """Read tdx local file
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_TdxReaderServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -39,6 +51,11 @@ def add_TdxReaderServicer_to_server(servicer, server):
                     servicer.Hello,
                     request_deserializer=TdxReader__pb2.HelloRequest.FromString,
                     response_serializer=TdxReader__pb2.HelloReply.SerializeToString,
+            ),
+            'ReadTdxFile': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReadTdxFile,
+                    request_deserializer=TdxReader__pb2.ReadTdxFileRequest.FromString,
+                    response_serializer=TdxReader__pb2.TdxFileData.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -64,5 +81,21 @@ class TdxReader(object):
         return grpc.experimental.unary_unary(request, target, '/tdxreader.TdxReader/Hello',
             TdxReader__pb2.HelloRequest.SerializeToString,
             TdxReader__pb2.HelloReply.FromString,
+            options, channel_credentials,
+            call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ReadTdxFile(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/tdxreader.TdxReader/ReadTdxFile',
+            TdxReader__pb2.ReadTdxFileRequest.SerializeToString,
+            TdxReader__pb2.TdxFileData.FromString,
             options, channel_credentials,
             call_credentials, compression, wait_for_ready, timeout, metadata)
